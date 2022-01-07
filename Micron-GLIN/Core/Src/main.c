@@ -169,7 +169,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-  DAC_target_speed=0.02; //  V/s
+  DAC_target_speed=0.04; //  V/s
   DAC_code=0xFFFFF;
   DAC_code_direction=0;
 

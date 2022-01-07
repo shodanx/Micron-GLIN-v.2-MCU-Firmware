@@ -845,7 +845,7 @@ int main(void)
  80008be:	f007 f837 	bl	8007930 <MX_USB_DEVICE_Init>
   /* USER CODE BEGIN 2 */
 
-  DAC_target_speed=0.01; //  V/s
+  DAC_target_speed=0.02; //  V/s
  80008c2:	4b10      	ldr	r3, [pc, #64]	; (8000904 <main+0x94>)
  80008c4:	4a10      	ldr	r2, [pc, #64]	; (8000908 <main+0x98>)
  80008c6:	601a      	str	r2, [r3, #0]
@@ -888,7 +888,7 @@ int main(void)
  80008fe:	e7fe      	b.n	80008fe <main+0x8e>
  8000900:	200003d8 	.word	0x200003d8
  8000904:	200003ec 	.word	0x200003ec
- 8000908:	3c23d70a 	.word	0x3c23d70a
+ 8000908:	3ca3d70a 	.word	0x3ca3d70a
  800090c:	200001a0 	.word	0x200001a0
  8000910:	000fffff 	.word	0x000fffff
  8000914:	200003f0 	.word	0x200003f0
