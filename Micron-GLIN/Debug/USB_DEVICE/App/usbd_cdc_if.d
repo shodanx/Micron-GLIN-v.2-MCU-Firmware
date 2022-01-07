@@ -34,7 +34,8 @@ USB_DEVICE/App/usbd_cdc_if.o: ../USB_DEVICE/App/usbd_cdc_if.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
+ D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
+ D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h
 
 ../USB_DEVICE/App/usbd_cdc_if.h:
 
@@ -109,3 +110,5 @@ D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/In
 D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
 
 D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
+
+D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h:

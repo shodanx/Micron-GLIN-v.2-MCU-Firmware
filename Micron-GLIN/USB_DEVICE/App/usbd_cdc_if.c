@@ -23,6 +23,8 @@
 
 /* USER CODE BEGIN INCLUDE */
 
+#include "circular_buffer.h"
+
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,6 +111,9 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
+
+extern void Write_to_circ_buffer(uint32_t);
+extern FunctionalState USB_CDC_End_Line_Received;
 
 /* USER CODE END EXPORTED_VARIABLES */
 
@@ -222,7 +227,13 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
     case CDC_GET_LINE_CODING:
-
+        pbuf[0] = 0x20; // bits/second 115200
+        pbuf[1] = 0xc2;
+        pbuf[2] = 0x01;
+        pbuf[3] = 0x00;
+        pbuf[4] = 0x00; // 1 stop bit
+        pbuf[5] = 0x00; // parity none
+        pbuf[6] = 0x08; // 8 data bits
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
@@ -259,6 +270,17 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+  uint32_t i=0;
+
+  while(i<*Len)
+  {
+	  if(Buf[i]=='\n' || Buf[i]=='\r') USB_CDC_End_Line_Received=1;
+	  Write_to_circ_buffer(Buf[i]);
+	  i++;
+  }
+
+  CDC_Transmit_FS(Buf, *Len); // ADD THIS LINE to echo back all incoming data
+
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);

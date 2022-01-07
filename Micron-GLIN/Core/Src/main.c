@@ -25,6 +25,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "circular_buffer.h"
+#include <stdio.h>
+#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,6 +48,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
+
 typedef struct DAC_CONFIG1
 {
   FunctionalState EN_TMP_CAL;     // Enables and disables the temperature calibration feature
@@ -101,7 +107,7 @@ DAC_CONFIG1 cfg;
 
 //Calibration value
 float DDS_clock_frequecny=1E7;
-float DAC_fullrange_voltage=20;
+float DAC_fullrange_voltage=19.98133;
 
 float DDS_target_frequecny;
 float DAC_target_speed;
@@ -113,6 +119,10 @@ FunctionalState DAC_code_direction;
 uint32_t DAC_tx_buffer;
 uint8_t DAC_tx_tmp_buffer[4];
 
+// #define CRICBUF_CLEAN_ON_POP
+CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 128);
+FunctionalState USB_CDC_End_Line_Received;
+uint8_t command_buffer[129];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,6 +131,8 @@ void SystemClock_Config(void);
 void DDS_Init(void);
 void DAC_SendInit(void);
 void DAC_Write(uint32_t);
+void Write_to_circ_buffer(uint8_t);
+void Parsing_command(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -169,13 +181,14 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-  DAC_target_speed=0.04; //  V/s
+  DAC_target_speed=0.001; //  V/s
   DAC_code=0xFFFFF;
   DAC_code_direction=0;
 
-  DDS_target_frequecny=(DAC_fullrange_voltage/DAC_target_speed)/0xFFFFF;
+  DDS_target_frequecny=0xFFFFF/(DAC_fullrange_voltage/DAC_target_speed);
 
   DDS_Init();
+  cfg.LDACMODE=0;
   DAC_SendInit();
 
   /* USER CODE END 2 */
@@ -184,7 +197,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+	  if(USB_CDC_End_Line_Received)
+	  {	  uint8_t i=0;
+		  USB_CDC_End_Line_Received=0;
+		  while (1) {
+			  if (CIRC_GBUF_POP(USB_rx_command_buffer,&command_buffer[i])) command_buffer[i]='\n';
+			  if (command_buffer[i]=='\n' || command_buffer[i]=='\r') break;
+			  i++;
+		  }
+		  Parsing_command();
+	  }
+
+	  /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
@@ -232,6 +256,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+//==============================================================================================
 void DDS_Init(void)
 {
   float DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*0xFFFFFFFF;
@@ -253,10 +278,10 @@ void DDS_Init(void)
   DDS_tx_buffer[5]=0xC000; // Exit DAC from Sleep+Reset mode
 
   HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,6,100);
-  HAL_GPIO_WritePin(GPIOB, COUNT_EN_Pin, GPIO_PIN_RESET); // Enable LDAC signal
 
 }
 
+//==============================================================================================
 void DAC_SendInit(void)
 {
 	DAC_tx_buffer=0;
@@ -288,6 +313,7 @@ void DAC_SendInit(void)
 
 }
 
+//==============================================================================================
 void DAC_Write(uint32_t value)
 {
 	HAL_GPIO_WritePin(GPIOA, DAC_SYNC_Pin, GPIO_PIN_RESET);
@@ -309,6 +335,7 @@ void DAC_Write(uint32_t value)
   * @param GPIO_Pin: Specifies the pins connected EXTI line
   * @retval None
   */
+//==============================================================================================
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if(GPIO_Pin == GPIO_PIN_2)
@@ -332,6 +359,109 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 }
 
+//==============================================================================================
+void Write_to_circ_buffer(uint8_t Buf)
+{
+	if(CIRC_GBUF_PUSH(USB_rx_command_buffer, &Buf))	CIRC_GBUF_FLUSH(USB_rx_command_buffer); // If out of space, something wrong, clean all !!!
+}
+
+//==============================================================================================
+void Parsing_command(void)
+{
+	char *found;
+	char decoded_string_1[129];
+	char decoded_string_2[129];
+	uint8_t Clear[]="\033c \rEnter command:";
+	uint8_t Error[]="\r\n ERROR\n\r\n\r"
+			"Usage:\n\r"
+			"SWEEP START/STOP to control sweep cycle\n\r"
+			"DAC_SET TOP/DOWN to set DAC to 0xFFFFF or 0x0\n\r"
+			"\n\r"
+			"\n\rEnter command: ";
+	uint8_t OK[]="\r\n OK \n\rEnter command: ";
+
+	found = strtok((char *)command_buffer," ");
+	if(found!=NULL)
+	{
+		strcpy(decoded_string_1,found);
+	}
+	else
+	{
+		CDC_Transmit_FS(Error, strlen((const char *)Error));  // SEND ERROR TO CDC!!!
+	   return;
+	}
+
+	found = strtok(NULL,"\r");
+	if(found!=NULL)
+	{
+		strcpy(decoded_string_2,found);
+	}
+	else
+	{
+		CDC_Transmit_FS(Error, strlen((const char *)Error));  // SEND ERROR TO CDC!!!
+	   return;
+	}
+// ==== SWEEP command ====
+	if(!(strcmp(decoded_string_1,"SWEEP")))
+	{
+		if(!(strcmp(decoded_string_2,"START"))){
+			HAL_GPIO_WritePin(GPIOB, COUNT_EN_Pin, GPIO_PIN_RESET); // Enable LDAC signal
+			cfg.LDACMODE=1;
+			DAC_SendInit();
+			CDC_Transmit_FS(OK, strlen((const char *)OK));
+		}
+		else
+		{
+			if(!(strcmp(decoded_string_2,"STOP"))){
+						HAL_GPIO_WritePin(GPIOB, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
+						cfg.LDACMODE=0;
+						DAC_SendInit();
+						CDC_Transmit_FS(OK, strlen((const char *)OK));
+			}
+			else
+			{
+				CDC_Transmit_FS(Error, strlen((const char *)Error));  // SEND ERROR TO CDC!!!
+				return;
+			}
+
+		}
+	}
+	// ==== DAC_SET command ====
+	if(!(strcmp(decoded_string_1,"DAC_SET")))
+	{
+		if(!(strcmp(decoded_string_2,"TOP"))){
+			  DAC_code=0xFFFFF;
+			  DAC_code_direction=0;
+			  cfg.LDACMODE=0;
+			  DAC_SendInit();
+			  DAC_Write(DAC_code);
+			  DAC_Write(DAC_code);
+			  CDC_Transmit_FS(OK, strlen((const char *)OK));
+		}
+		else
+		{
+			if(!(strcmp(decoded_string_2,"DOWN"))){
+				  DAC_code=0x0;
+				  DAC_code_direction=1;
+				  cfg.LDACMODE=0;
+				  DAC_SendInit();
+				  DAC_Write(DAC_code);
+				  DAC_Write(DAC_code);
+				  CDC_Transmit_FS(OK, strlen((const char *)OK));
+			}
+			else
+			{
+				CDC_Transmit_FS(Error, strlen((const char *)Error));  // SEND ERROR TO CDC!!!
+				return;
+			}
+		}
+	}
+
+
+
+}
+
+//==============================================================================================
 /* USER CODE END 4 */
 
 /**

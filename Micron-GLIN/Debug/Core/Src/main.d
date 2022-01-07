@@ -31,7 +31,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/App/usb_device.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h \
- ../Core/Inc/gpio.h
+ ../Core/Inc/gpio.h \
+ D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h
 
 ../Core/Inc/main.h:
 
@@ -102,3 +103,5 @@ D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/In
 D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h:
 
 ../Core/Inc/gpio.h:
+
+D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h:

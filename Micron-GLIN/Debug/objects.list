@@ -1,3 +1,4 @@
+"./Circular-buffer/src/circular_buffer.o"
 "./Core/Src/gpio.o"
 "./Core/Src/main.o"
 "./Core/Src/spi.o"
