@@ -1,0 +1,3 @@
+circular_buffer.c:11:5:__circ_gbuf_pop	32	static
+circular_buffer.c:40:5:__circ_gbuf_push	24	static
+circular_buffer.c:61:5:__circ_gbuf_free_space	24	static
