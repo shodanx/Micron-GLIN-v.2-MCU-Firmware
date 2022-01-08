@@ -121,9 +121,9 @@ uint32_t DAC_tx_buffer;
 uint8_t DAC_tx_tmp_buffer[4];
 
 // #define CRICBUF_CLEAN_ON_POP
-CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 128);
+CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
 FunctionalState USB_CDC_End_Line_Received;
-uint8_t command_buffer[129];
+uint8_t command_buffer[31];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -264,7 +264,7 @@ void DDS_Init(void)
 
 	if((DDS_target_frequecny*256)>500000)
 	{
-		DDS_target_multipiller=DDS_target_frequecny/500000;
+		DDS_target_multipiller=(DDS_target_frequecny*256)/500000;
 		DDS_target_frequecny=0xFFFFF/(DAC_fullrange_voltage/DAC_target_speed)/DDS_target_multipiller;
 	} else DDS_target_multipiller = 1;
 
@@ -357,6 +357,7 @@ void DAC_Write(uint32_t value)
 //==============================================================================================
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	uint8_t Done[]="\r\n CYCLE COMPLETE !\n\r\n\r";
 	if(GPIO_Pin == GPIO_PIN_2)
 	{
 		if(DAC_code_direction)
@@ -368,6 +369,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
 				cfg.LDACMODE=0;
 				DAC_SendInit();
+				DAC_code=0xFFFFF;
+				DAC_code_direction=0;
+				CDC_Transmit_FS(Done, strlen((const char *)Done));  // SEND ERROR TO CDC!!!
+
+
 			}
 		}
 		else
@@ -379,6 +385,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
 				cfg.LDACMODE=0;
 				DAC_SendInit();
+				DAC_code=0x0;
+				DAC_code_direction=1;
+				CDC_Transmit_FS(Done, strlen((const char *)Done));  // SEND ERROR TO CDC!!!
 			}
 		}
 		DAC_Write(DAC_code);
@@ -404,14 +413,15 @@ void Parsing_command(void)
 {
 	float atof_tmp;
 	char *found;
-	char decoded_string_1[129];
-	char decoded_string_2[129];
+	char decoded_string_1[31];
+	char decoded_string_2[31];
 	//	uint8_t Clear[]="\033c \rEnter command:";
 	uint8_t Error1[]="\r\n ERROR\n\r\n\r"
 			"Usage:\n\r"
-			"SWEEP START/STOP  - control sweep cycle \n\r";
-	uint8_t Error2[]="DAC_SET TOP/DOWN  - set DAC to 0xFFFFF or 0x0 \n\r"
+			"SWEEP START/STOP  - control sweep cycle \n\r"
+			"DAC_SET TOP/DOWN  - set DAC to 0xFFFFF or 0x0 \n\r"
 			"DAC_TEMPCAL START - start temperature calibration cycle \n\r"
+			"SWEEP_RATE 1.0E-3 - start temperature calibration cycle \n\r"
 			"\n\r"
 			"\n\rEnter command: ";
 	uint8_t OK[]="\r\n OK \n\rEnter command: ";
@@ -423,10 +433,9 @@ void Parsing_command(void)
 	}
 	else
 	{
+		HAL_Delay(10);
 		CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-		HAL_Delay(100);
-		CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-		HAL_Delay(100);
+		HAL_Delay(10);
 		return;
 	}
 
@@ -437,10 +446,9 @@ void Parsing_command(void)
 	}
 	else
 	{
+		HAL_Delay(10);
 		CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-		HAL_Delay(100);
-		CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-		HAL_Delay(100);
+		HAL_Delay(10);
 		return;
 	}
 	// ==== SWEEP command ====
@@ -450,8 +458,10 @@ void Parsing_command(void)
 			HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_RESET); // Enable LDAC signal
 			cfg.LDACMODE=1;
 			DAC_SendInit();
+			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
-			HAL_Delay(100);
+			HAL_Delay(10);
+			return;
 		}
 		else
 		{
@@ -459,15 +469,16 @@ void Parsing_command(void)
 				HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
 				cfg.LDACMODE=0;
 				DAC_SendInit();
+				HAL_Delay(10);
 				CDC_Transmit_FS(OK, strlen((const char *)OK));
-				HAL_Delay(100);
+				HAL_Delay(10);
+				return;
 			}
 			else
 			{
+				HAL_Delay(10);
 				CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-				HAL_Delay(100);
-				CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-				HAL_Delay(100);
+				HAL_Delay(10);
 				return;
 			}
 
@@ -483,8 +494,10 @@ void Parsing_command(void)
 			DAC_SendInit();
 			DAC_Write(DAC_code);
 			DAC_Write(DAC_code);
+			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
-			HAL_Delay(100);
+			HAL_Delay(10);
+			return;
 		}
 		else
 		{
@@ -495,15 +508,16 @@ void Parsing_command(void)
 				DAC_SendInit();
 				DAC_Write(DAC_code);
 				DAC_Write(DAC_code);
+				HAL_Delay(10);
 				CDC_Transmit_FS(OK, strlen((const char *)OK));
-				HAL_Delay(100);
+				HAL_Delay(10);
+				return;
 			}
 			else
 			{
+				HAL_Delay(10);
 				CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-				HAL_Delay(100);
-				CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-				HAL_Delay(100);
+				HAL_Delay(10);
 				return;
 			}
 		}
@@ -519,15 +533,16 @@ void Parsing_command(void)
 			DAC_SendInit();
 			DAC_TEMP_CAL();
 			while(HAL_GPIO_ReadPin(DAC_ALARM_GPIO_Port, DAC_ALARM_Pin)==GPIO_PIN_SET);
+			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
-			HAL_Delay(100);
+			HAL_Delay(10);
+			return;
 		}
 		else
 		{
+			HAL_Delay(10);
 			CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-			HAL_Delay(100);
-			CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-			HAL_Delay(100);
+			HAL_Delay(10);
 			return;
 		}
 	}
@@ -539,10 +554,9 @@ void Parsing_command(void)
 		atof_tmp=atof(decoded_string_2);
 		if(atof_tmp<0.001 || atof_tmp>1)
 		{
+			HAL_Delay(10);
 			CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-			HAL_Delay(100);
-			CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-			HAL_Delay(100);
+			HAL_Delay(10);
 			return;
 		}
 		else
@@ -550,15 +564,15 @@ void Parsing_command(void)
 			DAC_target_speed=atof_tmp;
 			DDS_Init();
 
-			HAL_Delay(100);
+			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
-			HAL_Delay(100);
+			HAL_Delay(10);
+			return;
 		}
 	}
+	HAL_Delay(10);
 	CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-	HAL_Delay(100);
-	CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-	HAL_Delay(100);
+	HAL_Delay(10);
 	return;
 }
 
