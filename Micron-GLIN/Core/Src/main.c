@@ -130,6 +130,7 @@ uint8_t command_buffer[31];
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void DDS_Init(void);
+void DDS_prepare_to_tempcal(void);
 void DAC_SendInit(void);
 void DAC_TEMP_CAL(void);
 void DAC_Write(uint32_t);
@@ -143,58 +144,61 @@ void Parsing_command(void);
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 	cfg.PDN=0; // DAC power up
 	cfg.VREFVAL=0x08; // 20 V ± 1.25 V
 	cfg.FSET=1; // Enhanced THD
-	cfg.DSDO=0; // SDO enabled
+	cfg.DSDO=1; // SDO enabled
 	cfg.ENALMP=0; // Indicates end of temperature calibration cycle. ALARM pin pulled low
 	cfg.FSDO=0; // Fast SDO disabled
 	cfg.LDACMODE=0; // DAC *NOT* updated on LDAC !!!!falling edge!!!!
 	cfg.TNH_MASK=0x00; // This bit is writable only when FSET = 0
 	cfg.EN_TMP_CAL=0; // Temperature calibration feature enabled
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_SPI1_Init();
-	MX_SPI2_Init();
-	MX_USB_DEVICE_Init();
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_SPI1_Init();
+  MX_SPI2_Init();
+  MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN 2 */
 
 	DAC_target_speed=0.001; //  V/s
-	DAC_code=0xFFFFF;
+	DAC_code=0x7FFFF;
 	DAC_code_direction=0;
 
 	DDS_Init();
 	cfg.LDACMODE=0;
+	HAL_Delay(500);
 	DAC_SendInit();
+	HAL_Delay(500);
+	DAC_Write(DAC_code);
 
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
 		if(USB_CDC_End_Line_Received)
@@ -208,51 +212,51 @@ int main(void)
 		Parsing_command();
 		}
 
-		/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
-	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-	/** Configure the main internal regulator output voltage
-	 */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-	/** Initializes the RCC Oscillators according to the specified parameters
-	 * in the RCC_OscInitTypeDef structure.
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
-	RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB buses clocks
-	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
+  RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-	{
-		Error_Handler();
-	}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -291,6 +295,41 @@ void DDS_Init(void)
 }
 
 //==============================================================================================
+void DDS_prepare_to_tempcal(void)
+{
+
+	DDS_target_frequecny=0.01;
+
+	float DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*0xFFFFFFFF;
+
+	DDS_tx_buffer[0]=0xF800; // Enter DAC to Sleep+Reset mode
+
+	DDS_tx_buffer[1]=0x3300; // Write to Frequency 0 Reg, H MSB
+	DDS_tx_buffer[1]+=((uint32_t)DDS_FTW >> 24) & 0xFF;
+
+	DDS_tx_buffer[2]=0x2200; // Write to Frequency 0 Reg, L MSBs
+	DDS_tx_buffer[2]+=((uint32_t)DDS_FTW >> 16) & 0xFF;
+
+	DDS_tx_buffer[3]=0x3100; // Write to Frequency 0 Reg, H LSBs
+	DDS_tx_buffer[3]+=((uint32_t)DDS_FTW >> 8) & 0xFF;
+
+	DDS_tx_buffer[4]=0x2000; // Write to Frequency 0 Reg, L LSBs
+	DDS_tx_buffer[4]+=((uint32_t)DDS_FTW & 0xFF);
+
+	DDS_tx_buffer[5]=0xC000; // Exit DAC from Sleep+Reset mode
+
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,6,100);
+	HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_RESET); // Enable LDAC signal
+
+	while(HAL_GPIO_ReadPin(CPU_LDAC_GPIO_Port, CPU_LDAC_Pin)==GPIO_PIN_RESET); // Waiting LDAC become high
+
+	DDS_tx_buffer[0]=0xF800; // Enter DAC to Sleep+Reset mode
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,100);
+
+}
+
+
+//==============================================================================================
 void DAC_SendInit(void)
 {
 	DAC_tx_buffer=0x02000000; // Write CONFIG1
@@ -311,7 +350,7 @@ void DAC_SendInit(void)
 
 
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,4,100);
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,4,5);
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
 
 }
@@ -319,6 +358,24 @@ void DAC_SendInit(void)
 //==============================================================================================
 void DAC_TEMP_CAL(void)
 {
+	uint8_t OK[]="\r\n OK \n\rEnter command: ";
+	uint8_t run_cal[]="\r\nCalibration in progress...";
+
+	uint8_t spi_receive[4],DAC_tx_tmp_buffer2[4],ALM=0;
+
+	uint8_t count_tmp=HAL_GPIO_ReadPin(COUNT_EN_GPIO_Port, COUNT_EN_Pin); // Save LDAC signal state
+
+	HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
+
+	HAL_Delay(10);
+	CDC_Transmit_FS(run_cal, strlen((const char *)run_cal));
+	HAL_Delay(10);
+
+	cfg.EN_TMP_CAL=1;
+	DAC_SendInit();
+
+	for(int i=0;i<4;i++)spi_receive[i]=0;
+
 	DAC_tx_buffer=0x04000100; // Write TRIGGER RCLTMP
 
 	DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFF000000)>>24;
@@ -326,19 +383,41 @@ void DAC_TEMP_CAL(void)
 	DAC_tx_tmp_buffer[2]=(DAC_tx_buffer & 0x0000FF00)>>8;
 	DAC_tx_tmp_buffer[3]=(DAC_tx_buffer & 0x000000FF);
 
+	DAC_tx_buffer=0x85000000; // read status register
+
+	DAC_tx_tmp_buffer2[0]=(DAC_tx_buffer & 0xFF000000)>>24;
+	DAC_tx_tmp_buffer2[1]=(DAC_tx_buffer & 0x00FF0000)>>16;
+	DAC_tx_tmp_buffer2[2]=(DAC_tx_buffer & 0x0000FF00)>>8;
+	DAC_tx_tmp_buffer2[3]=(DAC_tx_buffer & 0x000000FF);
 
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,4,100);
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,4,2);
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
+
+	do{
+
+		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
+		HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer2,4,2);
+		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
+
+
+		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
+		HAL_SPI_Receive(&hspi1,(uint8_t *)spi_receive, 4, 2);
+		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
+		ALM=(spi_receive[2] & 0x10) >> 4;
+		if(ALM!=1)HAL_Delay(1000);
+ 	}while(ALM!=1);
+
+	HAL_Delay(10);
+	CDC_Transmit_FS(OK, strlen((const char *)OK));
+	HAL_Delay(10);
+
+	HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, count_tmp); // Back LDAC signal state
 }
 
 //==============================================================================================
 void DAC_Write(uint32_t value)
 {
-	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,4,100);
-	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
-
 	// Speedup hint: Calculate data AFTER send.
 	DAC_tx_buffer=0x01000000; // Write DAC-DATA
 	DAC_tx_buffer+=(value & 0xFFFFF)<<4;
@@ -347,6 +426,10 @@ void DAC_Write(uint32_t value)
 	DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x00FF0000)>>16;
 	DAC_tx_tmp_buffer[2]=(DAC_tx_buffer & 0x0000FF00)>>8;
 	DAC_tx_tmp_buffer[3]=(DAC_tx_buffer & 0x000000FF);
+
+	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,4,2);
+	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
 }
 
 /**
@@ -418,10 +501,10 @@ void Parsing_command(void)
 	//	uint8_t Clear[]="\033c \rEnter command:";
 	uint8_t Error1[]="\r\n ERROR\n\r\n\r"
 			"Usage:\n\r"
-			"SWEEP START/STOP  - control sweep cycle \n\r"
-			"DAC_SET TOP/DOWN  - set DAC to 0xFFFFF or 0x0 \n\r"
-			"DAC_TEMPCAL START - start temperature calibration cycle \n\r"
-			"SWEEP_RATE 1.0E-3 - start temperature calibration cycle \n\r"
+			"SWEEP START/STOP         - control sweep cycle\n\r"
+			"DAC_SET TOP/DOWN/MIDDLE  - set DAC to 0xFFFFF or 0x0 or 0x7FFFF\n\r"
+			"DAC_TEMPCAL START        - start temperature calibration cycle\n\r"
+			"SWEEP_RATE 1.0E-3        - set dv/dt speed\n\r"
 			"\n\r"
 			"\n\rEnter command: ";
 	uint8_t OK[]="\r\n OK \n\rEnter command: ";
@@ -455,9 +538,11 @@ void Parsing_command(void)
 	if(!(strcmp(decoded_string_1,"SWEEP")))
 	{
 		if(!(strcmp(decoded_string_2,"START"))){
+			DAC_TEMP_CAL();
 			HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_RESET); // Enable LDAC signal
 			cfg.LDACMODE=1;
 			DAC_SendInit();
+			DDS_Init();
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
 			HAL_Delay(10);
@@ -493,7 +578,6 @@ void Parsing_command(void)
 			cfg.LDACMODE=0;
 			DAC_SendInit();
 			DAC_Write(DAC_code);
-			DAC_Write(DAC_code);
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
 			HAL_Delay(10);
@@ -507,19 +591,30 @@ void Parsing_command(void)
 				cfg.LDACMODE=0;
 				DAC_SendInit();
 				DAC_Write(DAC_code);
-				DAC_Write(DAC_code);
 				HAL_Delay(10);
 				CDC_Transmit_FS(OK, strlen((const char *)OK));
 				HAL_Delay(10);
 				return;
 			}
 			else
-			{
-				HAL_Delay(10);
-				CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-				HAL_Delay(10);
-				return;
-			}
+				if(!(strcmp(decoded_string_2,"MIDDLE"))){
+					DAC_code=0x7FFFF;
+					DAC_code_direction=1;
+					cfg.LDACMODE=0;
+					DAC_SendInit();
+					DAC_Write(DAC_code);
+					HAL_Delay(10);
+					CDC_Transmit_FS(OK, strlen((const char *)OK));
+					HAL_Delay(10);
+					return;
+				}
+				else
+				{
+					HAL_Delay(10);
+					CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
+					HAL_Delay(10);
+					return;
+				}
 		}
 	}
 
@@ -527,15 +622,10 @@ void Parsing_command(void)
 	if(!(strcmp(decoded_string_1,"DAC_TEMPCAL")))
 	{
 		if(!(strcmp(decoded_string_2,"START"))){
-			cfg.LDACMODE=0;
-			cfg.EN_TMP_CAL=1;
-			cfg.ENALMP=1;
-			DAC_SendInit();
+			DAC_code=0xAFFFF;
+			DAC_Write(DAC_code);
 			DAC_TEMP_CAL();
-			while(HAL_GPIO_ReadPin(DAC_ALARM_GPIO_Port, DAC_ALARM_Pin)==GPIO_PIN_SET);
-			HAL_Delay(10);
-			CDC_Transmit_FS(OK, strlen((const char *)OK));
-			HAL_Delay(10);
+			DAC_Write(DAC_code);
 			return;
 		}
 		else
@@ -580,34 +670,34 @@ void Parsing_command(void)
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1)
 	{
 	}
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
