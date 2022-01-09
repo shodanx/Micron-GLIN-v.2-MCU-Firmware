@@ -117,9 +117,6 @@ extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 /* Private defines -----------------------------------------------------------*/
 #define DAC_CLR_Pin GPIO_PIN_0
 #define DAC_CLR_GPIO_Port GPIOA
-#define DAC_ALARM_Pin GPIO_PIN_1
-#define DAC_ALARM_GPIO_Port GPIOA
-#define DAC_ALARM_EXTI_IRQn EXTI1_IRQn
 #define CPU_LDAC_Pin GPIO_PIN_2
 #define CPU_LDAC_GPIO_Port GPIOA
 #define CPU_LDAC_EXTI_IRQn EXTI2_IRQn

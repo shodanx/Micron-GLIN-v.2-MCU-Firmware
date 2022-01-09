@@ -27,7 +27,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_usb.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h \
- ../Core/Inc/spi.h ../Core/Inc/main.h \
+ ../Core/Inc/dac_and_dds_func.h ../Core/Inc/main.h ../Core/Inc/spi.h \
+ ../Core/Inc/spi.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/App/usb_device.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h \
@@ -92,9 +93,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h:
 
-../Core/Inc/spi.h:
+../Core/Inc/dac_and_dds_func.h:
 
 ../Core/Inc/main.h:
+
+../Core/Inc/spi.h:
+
+../Core/Inc/spi.h:
 
 D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/App/usb_device.h:
 

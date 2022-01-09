@@ -1,5 +1,9 @@
-USB_DEVICE/App/usb_device.o: ../USB_DEVICE/App/usb_device.c \
- ../USB_DEVICE/App/usb_device.h \
+Core/Src/dac_and_dds_func.o: ../Core/Src/dac_and_dds_func.c \
+ ../Core/Inc/dac_and_dds_func.h ../Core/Inc/main.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
+ ../Core/Inc/stm32l1xx_hal_conf.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l1xx.h \
  ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l152xb.h \
  ../Drivers/CMSIS/Include/core_cm3.h \
@@ -8,10 +12,6 @@ USB_DEVICE/App/usb_device.o: ../USB_DEVICE/App/usb_device.c \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Include/mpu_armv7.h \
  ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/system_stm32l1xx.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
- ../Core/Inc/stm32l1xx_hal_conf.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_gpio.h \
@@ -28,21 +28,19 @@ USB_DEVICE/App/usb_device.o: ../USB_DEVICE/App/usb_device.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_usb.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h \
- ../Core/Inc/main.h ../Core/Inc/dac_and_dds_func.h ../Core/Inc/main.h \
- ../Core/Inc/spi.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
- ../USB_DEVICE/App/usbd_desc.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- ../USB_DEVICE/App/usbd_cdc_if.h
+ ../Core/Inc/dac_and_dds_func.h ../Core/Inc/spi.h
 
-../USB_DEVICE/App/usb_device.h:
+../Core/Inc/dac_and_dds_func.h:
+
+../Core/Inc/main.h:
+
+../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h:
+
+../Core/Inc/stm32l1xx_hal_conf.h:
+
+../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h:
+
+../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h:
 
 ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l1xx.h:
 
@@ -59,14 +57,6 @@ USB_DEVICE/App/usb_device.o: ../USB_DEVICE/App/usb_device.c \
 ../Drivers/CMSIS/Include/mpu_armv7.h:
 
 ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/system_stm32l1xx.h:
-
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h:
-
-../Core/Inc/stm32l1xx_hal_conf.h:
-
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h:
-
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h:
 
@@ -100,32 +90,6 @@ USB_DEVICE/App/usb_device.o: ../USB_DEVICE/App/usb_device.c \
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h:
 
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h:
-
-../Core/Inc/main.h:
-
 ../Core/Inc/dac_and_dds_func.h:
 
-../Core/Inc/main.h:
-
 ../Core/Inc/spi.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
-
-../USB_DEVICE/App/usbd_desc.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h:
-
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
-
-../USB_DEVICE/App/usbd_cdc_if.h:
