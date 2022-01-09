@@ -272,16 +272,21 @@ void Parsing_command(void)
 	char *found;
 	char decoded_string_1[31];
 	char decoded_string_2[31];
-	//	uint8_t Clear[]="\033c \rEnter command:";
-	uint8_t Error1[]="\r\n ERROR\n\r\n\r"
+	uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
+			"\n\r"
+			"Hello dear ampnuts!\n\r"
+			"I'm Micron-GLIN, please tell me what you want?\n\r"
+			"\n\r"
 			"Usage:\n\r"
 			"SWEEP START/STOP         - control sweep cycle\n\r"
-			"DAC_SET TOP/DOWN/MIDDLE  - set DAC to 0xFFFFF or 0x0 or 0x7FFFF\n\r"
-			"DAC_TEMPCAL START        - start temperature calibration cycle\n\r"
 			"SWEEP_RATE 1.0E-3        - set dv/dt speed\n\r"
-			"SWEEP_DIRECTION UP/DOWN  - set dv/dt direction(increase or dicrease)\n\r"
+			"SWEEP_DIRECTION UP/DOWN  - set dv/dt direction(increase or decrease)\n\r"
+			"DAC_SET TOP/DOWN/MIDDLE  - set DAC to 0xFFFFF or 0x0 or 0x7FFFF\n\r"
+			"DAC_CAL_TOP 10.01234     - set maximum positive DAC voltage\n\r"
+			"DAC_CAL_DOWN -9.99876    - set maximum negative DAC voltage\n\r"
+			"DAC_CAL_TEMP START       - start temperature calibration cycle\n\r"
 			"\n\r"
-			"\n\rEnter command: ";
+			"Enter command: ";
 	uint8_t OK[]="\r\n OK \n\rEnter command: ";
 
 	found = strtok((char *)command_buffer," ");
@@ -394,11 +399,11 @@ void Parsing_command(void)
 		}
 	}
 
-	// ==== DAC_TEMPCAL command ====
-	if(!(strcmp(decoded_string_1,"DAC_TEMPCAL")))
+	// ==== DAC_CAL_TEMP command ====
+	if(!(strcmp(decoded_string_1,"DAC_CAL_TEMP")))
 	{
 		if(!(strcmp(decoded_string_2,"START"))){
-			DAC_code=0xAFFFF;
+			DAC_code=0x7FFFF;
 			DAC_Write(DAC_code);
 			DAC_TEMP_CAL();
 			DAC_Write(DAC_code);

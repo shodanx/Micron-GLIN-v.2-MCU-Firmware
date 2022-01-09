@@ -6,7 +6,6 @@ void DAC_Write(uint32_t value)
 	uint32_t DAC_tx_buffer;
 	uint8_t DAC_tx_tmp_buffer[4];
 
-	// Speedup hint: Calculate data AFTER send.
 	DAC_tx_buffer=0x01000000; // Write DAC-DATA
 	DAC_tx_buffer+=(value & 0xFFFFF)<<4;
 
