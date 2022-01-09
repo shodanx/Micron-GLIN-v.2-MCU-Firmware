@@ -111,16 +111,20 @@ void DAC_TEMP_CAL(void)
 void DDS_Init(void)
 {
 	uint16_t DDS_tx_buffer[6];
+	double hw_limit=1000; // 1(256)kHz hardware optimized limit
+	double dac_counts=1048576;
 
-	DDS_target_frequecny=0xFFFFF/(DAC_fullrange_voltage/DAC_target_speed);
 
-	if(DDS_target_frequecny>1000) // 1kHz hardware optimized limit
+	DDS_target_frequecny=dac_counts/(DAC_fullrange_voltage/DAC_target_speed);
+
+	if(DDS_target_frequecny>hw_limit)
 	{
-		DDS_target_multipiller=DDS_target_frequecny/1000;
-		DDS_target_frequecny=0xFFFFF/(DAC_fullrange_voltage/DAC_target_speed)/DDS_target_multipiller;
+		DDS_target_multipiller=DDS_target_frequecny/hw_limit;
+		DDS_target_frequecny=dac_counts/(DAC_fullrange_voltage/DAC_target_speed);
+		DDS_target_frequecny/=(double)DDS_target_multipiller;
 	} else DDS_target_multipiller = 1;
 
-	float DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*0xFFFFFFFF;
+	double DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*(double)0xFFFFFFFF;
 
 	DDS_tx_buffer[0]=0xF800; // Enter DAC to Sleep+Reset mode
 
@@ -149,7 +153,7 @@ void DDS_prepare_to_tempcal(void)
 
 	DDS_target_frequecny=0.1;
 
-	float DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*0xFFFFFFFF;
+	double DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*(double)0xFFFFFFFF;
 
 	DDS_tx_buffer[0]=0xF800; // Enter DAC to Sleep+Reset mode
 

@@ -14,11 +14,11 @@ void DAC_TEMP_CAL(void);
 void DAC_Write(uint32_t);
 void DAC_Write_FAST(void);
 
-extern float DDS_clock_frequecny;
-extern float DAC_fullrange_voltage;
+extern double DDS_clock_frequecny;
+extern double DAC_fullrange_voltage;
 
-extern float DDS_target_frequecny;
-extern float DAC_target_speed;
+extern double DDS_target_frequecny;
+extern double DAC_target_speed;
 extern uint32_t DDS_target_multipiller;
 
 uint32_t DAC_tx_buffer;

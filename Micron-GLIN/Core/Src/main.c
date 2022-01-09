@@ -70,13 +70,13 @@ uint8_t Error2[]="\r\n Value out of range \n\r\n\rEnter command: ";
 uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
 
 //Calibration value
-float DDS_clock_frequecny=1E7;
-float DAC_fullrange_voltage;
-float cal_DAC_up_voltage;
-float cal_DAC_down_voltage;
+double DDS_clock_frequecny=1E7;
+double DAC_fullrange_voltage;
+double cal_DAC_up_voltage;
+double cal_DAC_down_voltage;
 
-float DDS_target_frequecny;
-float DAC_target_speed;
+double DDS_target_frequecny;
+double DAC_target_speed;
 uint32_t DDS_target_multipiller=1;
 
 uint32_t DAC_code=0x0;
@@ -153,8 +153,8 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-	cal_DAC_up_voltage=((float)EEPROM_read(0x00))/1000000; // Read top voltage calibration from EEPROM in uV value
-	cal_DAC_down_voltage=((float)EEPROM_read(0x08))/-1000000; // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_up_voltage=((double)EEPROM_read(0x00))/1000000; // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_down_voltage=((double)EEPROM_read(0x08))/-1000000; // Read top voltage calibration from EEPROM in uV value
 	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 
 	DDS_Init();
@@ -302,7 +302,7 @@ void Parsing_command(void)
 	char *found;
 	char decoded_string_1[31];
 	char decoded_string_2[31];
-	float dac_resolution;
+	double dac_resolution;
 
 	found = strtok((char *)command_buffer," ");
 	if(found!=NULL)
