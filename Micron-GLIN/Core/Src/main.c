@@ -153,6 +153,8 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+	HAL_Delay(2000); //WarmUP
+
 	cal_DAC_up_voltage=((double)EEPROM_read(0x00))/1000000; // Read top voltage calibration from EEPROM in uV value
 	cal_DAC_down_voltage=((double)EEPROM_read(0x08))/-1000000; // Read top voltage calibration from EEPROM in uV value
 	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
