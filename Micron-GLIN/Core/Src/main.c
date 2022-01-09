@@ -449,6 +449,7 @@ void Parsing_command(void)
 			cal_DAC_up_voltage=atof_tmp;
 			EEPROM_write(0x00,(uint32_t)(cal_DAC_up_voltage*1000000)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
+			DDS_Init();
 
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
@@ -474,6 +475,7 @@ void Parsing_command(void)
 			cal_DAC_down_voltage=atof_tmp;
 			EEPROM_write(0x08,(uint32_t)(cal_DAC_down_voltage*-1000000)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
+			DDS_Init();
 
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));

@@ -114,9 +114,9 @@ void DDS_Init(void)
 
 	DDS_target_frequecny=0xFFFFF/(DAC_fullrange_voltage/DAC_target_speed);
 
-	if((DDS_target_frequecny*256)>500000)
+	if((DDS_target_frequecny*256)>256000)
 	{
-		DDS_target_multipiller=(DDS_target_frequecny*256)/500000;
+		DDS_target_multipiller=(DDS_target_frequecny*256)/256000;
 		DDS_target_frequecny=0xFFFFF/(DAC_fullrange_voltage/DAC_target_speed)/DDS_target_multipiller;
 	} else DDS_target_multipiller = 1;
 
