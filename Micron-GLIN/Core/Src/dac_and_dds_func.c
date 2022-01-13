@@ -61,7 +61,7 @@ void DAC_TEMP_CAL(void)
 
 	uint8_t count_tmp=HAL_GPIO_ReadPin(COUNT_EN_GPIO_Port, COUNT_EN_Pin); // Save LDAC signal state
 
-	DDS_prepare_to_tempcal();
+//	DDS_prepare_to_tempcal();
 
 	HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
 
@@ -110,7 +110,7 @@ void DAC_TEMP_CAL(void)
 //==============================================================================================
 void DDS_Init(void)
 {
-	uint16_t DDS_tx_buffer[6];
+	uint16_t DDS_tx_buffer[1];
 	double hw_limit=1000; // 1(256)kHz hardware optimized limit
 	double dac_counts=1048576;
 
@@ -126,26 +126,60 @@ void DDS_Init(void)
 
 	double DDS_FTW=((DDS_target_frequecny*256)/DDS_clock_frequecny)*(double)0xFFFFFFFF;
 
-	DDS_tx_buffer[0]=0xF800; // Enter DAC to Sleep+Reset mode
+	// Control DDS (D15=1, D14=1)
+	DDS_tx_buffer[0]=0xC000; // Control DDS (D15=1, D14=1)
+	DDS_tx_buffer[0]+=1 << 12; // Enter DDS to Reset mode, RST (D12) = 1
 
-	DDS_tx_buffer[1]=0x3300; // Write to Frequency 0 Reg, H MSB
-	DDS_tx_buffer[1]+=((uint32_t)DDS_FTW >> 24) & 0xFF;
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_Delay(5);
 
-	DDS_tx_buffer[2]=0x2200; // Write to Frequency 0 Reg, L MSBs
-	DDS_tx_buffer[2]+=((uint32_t)DDS_FTW >> 16) & 0xFF;
+	// Write to Frequency 0 Reg, H MSB
+	DDS_tx_buffer[0]=0x3300;
+	DDS_tx_buffer[0]+=((uint32_t)DDS_FTW >> 24) & 0xFF;
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_Delay(5);
 
-	DDS_tx_buffer[3]=0x3100; // Write to Frequency 0 Reg, H LSBs
-	DDS_tx_buffer[3]+=((uint32_t)DDS_FTW >> 8) & 0xFF;
+	// Write to Frequency 0 Reg, L MSBs
+	DDS_tx_buffer[0]=0x2200;
+	DDS_tx_buffer[0]+=((uint32_t)DDS_FTW >> 16) & 0xFF;
 
-	DDS_tx_buffer[4]=0x2000; // Write to Frequency 0 Reg, L LSBs
-	DDS_tx_buffer[4]+=((uint32_t)DDS_FTW & 0xFF);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_Delay(5);
 
-	DDS_tx_buffer[5]=0xC000; // Exit DAC from Sleep+Reset mode
+	// Write to Frequency 0 Reg, H LSBs
+	DDS_tx_buffer[0]=0x3100;
+	DDS_tx_buffer[0]+=((uint32_t)DDS_FTW >> 8) & 0xFF;
 
-	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,6,100);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_Delay(5);
+
+	// Write to Frequency 0 Reg, L LSBs
+	DDS_tx_buffer[0]=0x2000;
+	DDS_tx_buffer[0]+=((uint32_t)DDS_FTW & 0xFF);
+
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_Delay(5);
+
+	// Control DDS (D15=1, D14=1)
+	DDS_tx_buffer[0]=0xC000; // Exit DAC from Sleep+Reset mode
+
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_Delay(5);
 
 }
-
+/*
 //==============================================================================================
 void DDS_prepare_to_tempcal(void)
 {
@@ -180,3 +214,4 @@ void DDS_prepare_to_tempcal(void)
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,100);
 
 }
+*/

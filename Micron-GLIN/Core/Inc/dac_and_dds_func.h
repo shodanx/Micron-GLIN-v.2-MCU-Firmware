@@ -8,7 +8,7 @@
 #include "spi.h"
 
 void DDS_Init(void);
-void DDS_prepare_to_tempcal(void);
+//void DDS_prepare_to_tempcal(void);
 void DAC_SendInit(void);
 void DAC_TEMP_CAL(void);
 void DAC_Write(uint32_t);

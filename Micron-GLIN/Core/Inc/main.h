@@ -122,6 +122,8 @@ extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 #define CPU_LDAC_EXTI_IRQn EXTI2_IRQn
 #define DAC_SYNC_Pin GPIO_PIN_4
 #define DAC_SYNC_GPIO_Port GPIOA
+#define SPI2_NSS_Pin GPIO_PIN_12
+#define SPI2_NSS_GPIO_Port GPIOB
 #define COUNT_EN_Pin GPIO_PIN_3
 #define COUNT_EN_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
