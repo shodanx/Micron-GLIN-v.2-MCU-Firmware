@@ -1,5 +1,5 @@
-Core/Src/stm32l1xx_hal_msp.o: ../Core/Src/stm32l1xx_hal_msp.c \
- ../Core/Inc/main.h ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
+Core/Src/tim.o: ../Core/Src/tim.c ../Core/Inc/tim.h ../Core/Inc/main.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
  ../Core/Inc/stm32l1xx_hal_conf.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h \
@@ -29,7 +29,9 @@ Core/Src/stm32l1xx_hal_msp.o: ../Core/Src/stm32l1xx_hal_msp.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_usb.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h \
- ../Core/Inc/dac_and_dds_func.h ../Core/Inc/main.h ../Core/Inc/spi.h
+ ../Core/Inc/dac_and_dds_func.h ../Core/Inc/spi.h
+
+../Core/Inc/tim.h:
 
 ../Core/Inc/main.h:
 
@@ -94,7 +96,5 @@ Core/Src/stm32l1xx_hal_msp.o: ../Core/Src/stm32l1xx_hal_msp.c \
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h:
 
 ../Core/Inc/dac_and_dds_func.h:
-
-../Core/Inc/main.h:
 
 ../Core/Inc/spi.h:

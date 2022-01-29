@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "spi.h"
+#include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -60,9 +61,15 @@ uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"SWEEP_RATE 1.0E-3        - set dv/dt speed (range 1...0.001)\n\r"
 		"SWEEP_DIRECTION UP/DOWN  - set dv/dt direction(increase or decrease)\n\r"
 		"DAC_SET TOP/DOWN/3E.4567 - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
+
+		"\n\r"
 		"DAC_CAL_TOP 10.01234     - set maximum positive DAC voltage\n\r"
 		"DAC_CAL_DOWN -9.99876    - set maximum negative DAC voltage\n\r"
 		"DAC_CAL_TEMP START       - start DAC temperature calibration cycle\n\r"
+		"\n\r"
+		"DAC_CAL_POLY_A 1.266415E-16 - set Linearity correction\n\r" //1.266415E-16x2 - 1.845382E-10x + 1.000056E+00
+		"DAC_CAL_POLY_B 1.845382E-10 - set Linearity correction\n\r"
+		"DAC_CAL_POLY_C 1.000056E+00 - set Linearity correction\n\r"
 		"\n\r"
 		"Enter command: ";
 uint8_t OK[]="\r\n OK \n\rEnter command: ";
@@ -70,17 +77,24 @@ uint8_t Error2[]="\r\n Value out of range \n\r\n\rEnter command: ";
 uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
 
 //Calibration value
-double DDS_clock_frequecny=1E7;
-double DAC_fullrange_voltage;
-double cal_DAC_up_voltage;
-double cal_DAC_down_voltage;
+float DDS_clock_frequecny=1E7;
+float DAC_fullrange_voltage;
+float cal_DAC_up_voltage;
+float cal_DAC_down_voltage;
 
-double DDS_target_frequecny;
-double DAC_target_speed;
+float corr_coeff_1;
+float corr_coeff_2;
+float corr_coeff_3;
+
+
+float DDS_target_frequecny;
+float DAC_target_speed;
 uint32_t DDS_target_multipiller=1;
 
 uint32_t DAC_code=0x0;
 FunctionalState DAC_code_direction;
+
+FunctionalState Need_update_DDS=0;
 
 // #define CRICBUF_CLEAN_ON_POP
 CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
@@ -151,11 +165,17 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
 	HAL_Delay(20); //WarmUP
-	cal_DAC_up_voltage=((double)EEPROM_read(0x00))/1000000; // Read top voltage calibration from EEPROM in uV value
-	cal_DAC_down_voltage=((double)EEPROM_read(0x08))/-1000000; // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_up_voltage=((float)EEPROM_read(0x00))/1000000; // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_down_voltage=((float)EEPROM_read(0x08))/-1000000; // Read top voltage calibration from EEPROM in uV value
+
+	corr_coeff_1=((float)EEPROM_read(0x10));
+	corr_coeff_2=((float)EEPROM_read(0x18));
+	corr_coeff_3=((float)EEPROM_read(0x20));
+
 	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 
 	DDS_Init();
@@ -167,6 +187,9 @@ int main(void)
 	HAL_Delay(10);
 	CDC_Transmit_FS(clear, strlen((const char *)clear));
 	HAL_Delay(10);
+
+	HAL_TIM_Base_Start_IT(&htim3);
+
 
   /* USER CODE END 2 */
 
@@ -184,6 +207,12 @@ int main(void)
 				i++;
 			}
 			Parsing_command();
+		}
+
+		if(Need_update_DDS)
+		{
+			Need_update_DDS=0;
+			DDS_Update();
 		}
 
     /* USER CODE END WHILE */
@@ -237,6 +266,15 @@ void SystemClock_Config(void)
 //==============================================================================================
 
 
+// Callback: timer has rolled over
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  // Check which version of the timer triggered this callback and toggle LED
+  if (htim == &htim3 )
+  {
+    Need_update_DDS=1;
+  }
+}
 
 /**
  * @brief EXTI line detection callbacks
@@ -304,7 +342,7 @@ void Parsing_command(void)
 	char *found;
 	char decoded_string_1[31];
 	char decoded_string_2[31];
-	double dac_resolution;
+	float dac_resolution;
 
 	found = strtok((char *)command_buffer," ");
 	if(found!=NULL)
@@ -436,10 +474,46 @@ void Parsing_command(void)
 		else
 		{
 			HAL_Delay(10);
-			CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
+			CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!`
 			HAL_Delay(10);
 			return;
 		}
+	}
+
+	// ==== DAC_CAL_POLY_A command ====
+	if(!(strcmp(decoded_string_1,"DAC_CAL_POLY_A")))
+	{
+		atof_tmp=atof(decoded_string_2);
+		corr_coeff_1=atof_tmp;
+		EEPROM_write(0x10,atof_tmp);
+		HAL_Delay(10);
+		CDC_Transmit_FS(OK, strlen((const char *)OK));
+		HAL_Delay(10);
+		return;
+	}
+
+	// ==== DAC_CAL_POLY_B command ====
+	if(!(strcmp(decoded_string_1,"DAC_CAL_POLY_B")))
+	{
+		atof_tmp=atof(decoded_string_2);
+		corr_coeff_2=atof_tmp;
+		EEPROM_write(0x18,atof_tmp);
+		HAL_Delay(10);
+		CDC_Transmit_FS(OK, strlen((const char *)OK));
+		HAL_Delay(10);
+		return;
+	}
+
+	// ==== DAC_CAL_POLY_C command ====
+	if(!(strcmp(decoded_string_1,"DAC_CAL_POLY_C")))
+	{
+		atof_tmp=atof(decoded_string_2);
+		corr_coeff_3=atof_tmp;
+		EEPROM_write(0x20,atof_tmp);
+		HAL_Delay(10);
+		CDC_Transmit_FS(OK, strlen((const char *)OK));
+		HAL_Delay(10);
+		return;
 	}
 
 	// ==== DAC_CAL_TOP command ====

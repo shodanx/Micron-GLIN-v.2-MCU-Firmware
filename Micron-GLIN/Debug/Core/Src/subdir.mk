@@ -13,7 +13,8 @@ C_SRCS += \
 ../Core/Src/stm32l1xx_it.c \
 ../Core/Src/syscalls.c \
 ../Core/Src/sysmem.c \
-../Core/Src/system_stm32l1xx.c 
+../Core/Src/system_stm32l1xx.c \
+../Core/Src/tim.c 
 
 C_DEPS += \
 ./Core/Src/dac_and_dds_func.d \
@@ -24,7 +25,8 @@ C_DEPS += \
 ./Core/Src/stm32l1xx_it.d \
 ./Core/Src/syscalls.d \
 ./Core/Src/sysmem.d \
-./Core/Src/system_stm32l1xx.d 
+./Core/Src/system_stm32l1xx.d \
+./Core/Src/tim.d 
 
 OBJS += \
 ./Core/Src/dac_and_dds_func.o \
@@ -35,7 +37,8 @@ OBJS += \
 ./Core/Src/stm32l1xx_it.o \
 ./Core/Src/syscalls.o \
 ./Core/Src/sysmem.o \
-./Core/Src/system_stm32l1xx.o 
+./Core/Src/system_stm32l1xx.o \
+./Core/Src/tim.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -45,7 +48,7 @@ Core/Src/%.o: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/dac_and_dds_func.d ./Core/Src/dac_and_dds_func.o ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/spi.d ./Core/Src/spi.o ./Core/Src/stm32l1xx_hal_msp.d ./Core/Src/stm32l1xx_hal_msp.o ./Core/Src/stm32l1xx_it.d ./Core/Src/stm32l1xx_it.o ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/system_stm32l1xx.d ./Core/Src/system_stm32l1xx.o
+	-$(RM) ./Core/Src/dac_and_dds_func.d ./Core/Src/dac_and_dds_func.o ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/spi.d ./Core/Src/spi.o ./Core/Src/stm32l1xx_hal_msp.d ./Core/Src/stm32l1xx_hal_msp.o ./Core/Src/stm32l1xx_it.d ./Core/Src/stm32l1xx_it.o ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/system_stm32l1xx.d ./Core/Src/system_stm32l1xx.o ./Core/Src/tim.d ./Core/Src/tim.o
 
 .PHONY: clean-Core-2f-Src
 
