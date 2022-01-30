@@ -111,6 +111,7 @@ void Write_to_circ_buffer(uint8_t);
 
 uint32_t EEPROM_read(uint32_t);
 void EEPROM_write(uint32_t, uint32_t);
+float binary_to_float(uint32_t);
 
 void Parsing_command(void);
 
@@ -169,12 +170,12 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	HAL_Delay(20); //WarmUP
-	cal_DAC_up_voltage=((float)EEPROM_read(0x00))/1000000; // Read top voltage calibration from EEPROM in uV value
-	cal_DAC_down_voltage=((float)EEPROM_read(0x08))/-1000000; // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_up_voltage=binary_to_float(EEPROM_read(0x00)); // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_down_voltage=binary_to_float(EEPROM_read(0x08)); // Read top voltage calibration from EEPROM in uV value
 
-	corr_coeff_1=((float)EEPROM_read(0x10));
-	corr_coeff_2=((float)EEPROM_read(0x18));
-	corr_coeff_3=((float)EEPROM_read(0x20));
+	corr_coeff_1=binary_to_float(EEPROM_read(0x10));
+	corr_coeff_2=binary_to_float(EEPROM_read(0x18));
+	corr_coeff_3=binary_to_float(EEPROM_read(0x20));
 
 	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 
@@ -342,6 +343,38 @@ void Write_to_circ_buffer(uint8_t Buf)
 	if(CIRC_GBUF_PUSH(USB_rx_command_buffer, &Buf))	CIRC_GBUF_FLUSH(USB_rx_command_buffer); // If out of space, something wrong, clean all !!!
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
+float binary_to_float(uint32_t a)
+{
+	    int * p;
+	    float out=0;
+
+	    p = &out;
+	    (*p)=a;
+	    return out;
+}
+
+
+uint32_t float_to_binary(float a)
+{
+	    int i;
+	    int * p;
+	    uint32_t out=0;
+
+	    p = &a;
+	    for (i = sizeof(int) * 8 - 1; i >= 0; i--)
+	    {
+	    	out+=((*p) >> i & 1)<<i;
+	    }
+
+	    return out;
+}
+#pragma GCC pop_options
+#pragma GCC diagnostic pop
 //==============================================================================================
 void Parsing_command(void)
 {
@@ -492,7 +525,7 @@ void Parsing_command(void)
 	{
 		atof_tmp=atof(decoded_string_2);
 		corr_coeff_1=atof_tmp;
-		EEPROM_write(0x10,atof_tmp);
+		EEPROM_write(0x10,float_to_binary(atof_tmp));
 		HAL_Delay(10);
 		CDC_Transmit_FS(OK, strlen((const char *)OK));
 		HAL_Delay(10);
@@ -504,7 +537,7 @@ void Parsing_command(void)
 	{
 		atof_tmp=atof(decoded_string_2);
 		corr_coeff_2=atof_tmp;
-		EEPROM_write(0x18,atof_tmp);
+		EEPROM_write(0x18,float_to_binary(atof_tmp));
 		HAL_Delay(10);
 		CDC_Transmit_FS(OK, strlen((const char *)OK));
 		HAL_Delay(10);
@@ -516,7 +549,7 @@ void Parsing_command(void)
 	{
 		atof_tmp=atof(decoded_string_2);
 		corr_coeff_3=atof_tmp;
-		EEPROM_write(0x20,atof_tmp);
+		EEPROM_write(0x20,float_to_binary(atof_tmp));
 		HAL_Delay(10);
 		CDC_Transmit_FS(OK, strlen((const char *)OK));
 		HAL_Delay(10);
@@ -530,7 +563,7 @@ void Parsing_command(void)
 		if(atof_tmp>9.9 && atof_tmp<10.1)
 		{
 			cal_DAC_up_voltage=atof_tmp;
-			EEPROM_write(0x00,(uint32_t)(cal_DAC_up_voltage*1000000)); // Write top voltage calibration to EEPROM in uV value
+			EEPROM_write(0x00,float_to_binary(cal_DAC_up_voltage)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 			DDS_Init();
 
@@ -556,7 +589,7 @@ void Parsing_command(void)
 		if(atof_tmp>-10.1 && atof_tmp<-9.9)
 		{
 			cal_DAC_down_voltage=atof_tmp;
-			EEPROM_write(0x08,(uint32_t)(cal_DAC_down_voltage*-1000000)); // Write top voltage calibration to EEPROM in uV value
+			EEPROM_write(0x08,float_to_binary(cal_DAC_down_voltage)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 			DDS_Init();
 

@@ -2,5 +2,6 @@ dac_and_dds_func.c:4:6:DAC_Write	16	static
 dac_and_dds_func.c:19:6:DAC_Write_FAST	8	static
 dac_and_dds_func.c:27:6:DAC_SendInit	8	static
 dac_and_dds_func.c:52:6:DAC_TEMP_CAL	72	static
-dac_and_dds_func.c:111:6:DDS_Init	32	static
-dac_and_dds_func.c:184:6:DDS_Update	40	static
+dac_and_dds_func.c:110:6:DDS_Calculation	32	static
+dac_and_dds_func.c:134:6:DDS_Init	24	static
+dac_and_dds_func.c:194:6:DDS_Update	24	static
