@@ -9,6 +9,7 @@
 
 void DDS_Init(void);
 void DDS_Update(void);
+void DDS_Calculation(void);
 //void DDS_prepare_to_tempcal(void);
 void DAC_SendInit(void);
 void DAC_TEMP_CAL(void);
@@ -31,6 +32,6 @@ extern uint32_t DDS_target_multipiller;
 
 uint32_t DAC_tx_buffer;
 uint16_t DAC_tx_tmp_buffer[2];
-
+extern float DDS_FTW;
 
 #endif
