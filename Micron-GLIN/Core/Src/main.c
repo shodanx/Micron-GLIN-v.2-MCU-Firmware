@@ -169,7 +169,8 @@ int main(void)
 	MX_TIM3_Init();
 	/* USER CODE BEGIN 2 */
 
-	HAL_Delay(20); //WarmUP
+	HAL_Delay(500); //WarmUP
+
 	cal_DAC_up_voltage=binary_to_float(EEPROM_read(0x00)); // Read top voltage calibration from EEPROM in uV value
 	cal_DAC_down_voltage=binary_to_float(EEPROM_read(0x08)); // Read top voltage calibration from EEPROM in uV value
 
