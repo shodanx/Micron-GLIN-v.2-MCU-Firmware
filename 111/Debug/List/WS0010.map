@@ -1,0 +1,447 @@
+###############################################################################
+#                                                                             #
+# IAR ELF Linker V6.40.2.53884/W32 for ARM              28/Aug/2012  08:47:07 #
+# Copyright 2007-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Output file  =  C:\projects\EPVD\Code\WS0010\Debug\Exe\WS0010.out        #
+#    Map file     =  C:\projects\EPVD\Code\WS0010\Debug\List\WS0010.map       #
+#    Command line =  C:\projects\EPVD\Code\WS0010\Debug\Obj\Test_WS0010.o     #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\WS0010_GR.o       #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\WS0010_font.o     #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\cstart_HD.o       #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\drv_hd44780.o     #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\drv_hd44780_l.o   #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\misc.o            #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\startup_stm32f10x #
+#                    _hd.o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_a #
+#                    dc.o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_bk #
+#                    p.o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_can #
+#                    .o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_cec. #
+#                    o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_crc.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_dac.o  #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_dbgmcu. #
+#                    o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_dma.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_exti.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_flash. #
+#                    o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_fsmc. #
+#                    o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_gpio. #
+#                    o C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_i2c.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_iwdg.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_pwr.o  #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_rcc.o   #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_rtc.o   #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_sdio.o  #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_spi.o   #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_tim.o   #
+#                    C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_usart.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\stm32f10x_wwdg.o #
+#                     C:\projects\EPVD\Code\WS0010\Debug\Obj\system_stm32f10x #
+#                    .o -o C:\projects\EPVD\Code\WS0010\Debug\Exe\WS0010.out  #
+#                    --map C:\projects\EPVD\Code\WS0010\Debug\List\WS0010.map #
+#                     --config C:\projects\EPVD\Code\WS0010\config\stm32f103x #
+#                    E_app.icf --semihosting --entry __iar_program_start      #
+#                    --vfe                                                    #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+*******************************************************************************
+*** RUNTIME MODEL ATTRIBUTES
+***
+
+CppFlavor       = *
+__SystemLibrary = DLib
+
+
+*******************************************************************************
+*** PLACEMENT SUMMARY
+***
+
+"A1":  place at 0x08000000 { ro section .intvec };
+"P2":  place in [from 0x08000000 to 0x0807ffff] { ro };
+"P3":  place in [from 0x20000000 to 0x2000ffff] { rw, block CSTACK, block HEAP };
+
+  Section            Kind        Address    Size  Object
+  -------            ----        -------    ----  ------
+"A1":                                      0x130
+  .intvec            ro code  0x08000000   0x130  startup_stm32f10x_hd.o [1]
+                            - 0x08000130   0x130
+
+"P2":                                     0x2410
+  .rodata            const    0x08000130   0x400  WS0010_font.o [1]
+  .text              ro code  0x08000530   0x3a0  WS0010_GR.o [1]
+  .text              ro code  0x080008d0   0x384  drv_hd44780.o [1]
+  .text              ro code  0x08000c54   0x17c  drv_hd44780_l.o [1]
+  .text              ro code  0x08000dd0   0x296  Test_WS0010.o [1]
+  .text              ro code  0x08001066    0x2e  copy_init3.o [4]
+  .text              ro code  0x08001094    0x44  stm32f10x_rcc.o [1]
+  .text              ro code  0x080010d8   0x14e  stm32f10x_gpio.o [1]
+  .text              ro code  0x08001228   0x14c  system_stm32f10x.o [1]
+  .rodata            const    0x08001374   0x380  WS0010_font.o [1]
+  .rodata            const    0x080016f4   0x348  WS0010_font.o [1]
+  .rodata            const    0x08001a3c   0x2c0  WS0010_font.o [1]
+  .rodata            const    0x08001cfc   0x280  WS0010_font.o [1]
+  .rodata            const    0x08001f7c   0x1a0  WS0010_font.o [1]
+  .rodata            const    0x0800211c    0x80  WS0010_font.o [1]
+  .rodata            const    0x0800219c    0x80  WS0010_font.o [1]
+  .text              ro code  0x0800221c    0x28  data_init3.o [4]
+  .iar.init_table    const    0x08002244    0x14  - Linker created -
+  .text              ro code  0x08002258    0x16  cmain.o [4]
+  .text              ro code  0x0800226e     0x4  low_level_init.o [3]
+  .text              ro code  0x08002272     0x4  exit.o [3]
+  .text              ro code  0x08002278     0xa  cexit.o [4]
+  .text              ro code  0x08002284    0x14  exit.o [5]
+  .text              ro code  0x08002298    0x14  cstart_HD.o [1]
+  .rodata            const    0x080022ac    0x10  Test_WS0010.o [1]
+  .text              ro code  0x080022bc    0x10  startup_stm32f10x_hd.o [1]
+  .rodata            const    0x080022cc     0xc  Test_WS0010.o [1]
+  .rodata            const    0x080022d8     0xc  Test_WS0010.o [1]
+  .rodata            const    0x080022e4     0xc  Test_WS0010.o [1]
+  .rodata            const    0x080022f0     0xc  Test_WS0010.o [1]
+  .rodata            const    0x080022fc     0xc  Test_WS0010.o [1]
+  .rodata            const    0x08002308     0xc  Test_WS0010.o [1]
+  .rodata            const    0x08002314     0xc  Test_WS0010.o [1]
+  .rodata            const    0x08002320     0xc  Test_WS0010.o [1]
+  .rodata            const    0x0800232c     0xc  Test_WS0010.o [1]
+  .rodata            const    0x08002338     0xc  WS0010_font.o [1]
+  .rodata            const    0x08002344     0xc  WS0010_font.o [1]
+  .rodata            const    0x08002350     0xc  WS0010_font.o [1]
+  .rodata            const    0x0800235c     0xc  WS0010_font.o [1]
+  .rodata            const    0x08002368     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002370     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002378     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002380     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002388     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002390     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002398     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023a0     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023a8     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023b0     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023b8     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023c0     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023c8     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023d0     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023d8     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023e0     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023e8     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023f0     0x8  Test_WS0010.o [1]
+  .rodata            const    0x080023f8     0x8  Test_WS0010.o [1]
+  .rodata            const    0x08002400     0x8  drv_hd44780.o [1]
+  .rodata            const    0x08002408     0x8  drv_hd44780.o [1]
+  .rodata            const    0x08002410     0x8  drv_hd44780.o [1]
+  .rodata            const    0x08002418     0x8  drv_hd44780.o [1]
+  .rodata            const    0x08002420     0x8  drv_hd44780.o [1]
+  .text              ro code  0x08002428     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800242c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002430     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002434     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002438     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800243c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002440     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002444     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002448     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800244c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002450     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002454     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002458     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800245c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002460     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002464     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002468     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800246c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002470     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002474     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002478     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800247c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002480     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002484     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002488     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800248c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002490     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002494     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002498     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800249c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024a0     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024a4     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024a8     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024ac     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024b0     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024b4     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024b8     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024bc     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024c0     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024c4     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024c8     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024cc     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024d0     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024d4     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024d8     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024dc     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024e0     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024e4     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024e8     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024ec     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024f0     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024f4     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024f8     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x080024fc     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002500     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002504     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002508     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800250c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002510     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002514     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002518     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800251c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002520     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002524     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002528     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x0800252c     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002530     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002534     0x4  startup_stm32f10x_hd.o [1]
+  .text              ro code  0x08002538     0x4  startup_stm32f10x_hd.o [1]
+  .rodata            const    0x0800253c     0x0  copy_init3.o [4]
+  Initializer bytes  ro data  0x0800253c     0x4  <for P3 s0>
+                            - 0x08002540  0x2410
+
+"P3", part 1 of 2:                           0x8
+  P3 s0                       0x20000000     0x4  <Init block>
+    .data            inited   0x20000000     0x4  drv_hd44780.o [1]
+                            - 0x20000004     0x4
+
+"P3", part 2 of 2:                        0x1b00
+  CSTACK                      0x20000008  0x1b00  <Block>
+    CSTACK           uninit   0x20000008  0x1b00  <Block tail>
+                            - 0x20001b08  0x1b00
+
+
+*******************************************************************************
+*** INIT TABLE
+***
+
+          Address     Size
+          -------     ----
+Copy (__iar_copy_init3)
+    1 source range, total size 0x4:
+          0x0800253c   0x4
+    1 destination range, total size 0x4:
+          0x20000000   0x4
+
+
+
+*******************************************************************************
+*** MODULE SUMMARY
+***
+
+    Module                  ro code  ro data  rw data
+    ------                  -------  -------  -------
+C:\projects\EPVD\Code\WS0010\Debug\Obj: [1]
+    Test_WS0010.o               662      276
+    WS0010_GR.o                 928
+    WS0010_font.o                      4 824
+    cstart_HD.o                  20
+    drv_hd44780.o               900       44        4
+    drv_hd44780_l.o             380
+    startup_stm32f10x_hd.o      596
+    stm32f10x_gpio.o            334
+    stm32f10x_rcc.o              68
+    system_stm32f10x.o          332
+    -------------------------------------------------
+    Total:                    4 220    5 144        4
+
+command line: [2]
+    -------------------------------------------------
+    Total:
+
+dl7M_tln.a: [3]
+    exit.o                        4
+    low_level_init.o              4
+    -------------------------------------------------
+    Total:                        8
+
+rt7M_tl.a: [4]
+    cexit.o                      10
+    cmain.o                      22
+    copy_init3.o                 46
+    data_init3.o                 40
+    -------------------------------------------------
+    Total:                      118
+
+shb_l.a: [5]
+    exit.o                       20
+    -------------------------------------------------
+    Total:                       20
+
+    Gaps                          6
+    Linker created                        20    6 912
+-----------------------------------------------------
+    Grand Total:              4 372    5 164    6 916
+
+
+*******************************************************************************
+*** ENTRY LIST
+***
+
+Entry                      Address   Size  Type      Object
+-----                      -------   ----  ----      ------
+?main                   0x08002259         Code  Gb  cmain.o [4]
+ADC1_2_IRQHandler       0x08002495         Code  Wk  startup_stm32f10x_hd.o [1]
+ADC3_IRQHandler         0x08002509         Code  Wk  startup_stm32f10x_hd.o [1]
+BusFault_Handler        0x08002435         Code  Wk  startup_stm32f10x_hd.o [1]
+CAN1_RX1_IRQHandler     0x080024a1         Code  Wk  startup_stm32f10x_hd.o [1]
+CAN1_SCE_IRQHandler     0x080024a5         Code  Wk  startup_stm32f10x_hd.o [1]
+CSTACK$$Base            0x20000008          --   Gb  - Linker created -
+CSTACK$$Limit           0x20001b08          --   Gb  - Linker created -
+DMA1_Channel1_IRQHandler
+                        0x08002479         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA1_Channel2_IRQHandler
+                        0x0800247d         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA1_Channel3_IRQHandler
+                        0x08002481         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA1_Channel4_IRQHandler
+                        0x08002485         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA1_Channel5_IRQHandler
+                        0x08002489         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA1_Channel6_IRQHandler
+                        0x0800248d         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA1_Channel7_IRQHandler
+                        0x08002491         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA2_Channel1_IRQHandler
+                        0x0800252d         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA2_Channel2_IRQHandler
+                        0x08002531         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA2_Channel3_IRQHandler
+                        0x08002535         Code  Wk  startup_stm32f10x_hd.o [1]
+DMA2_Channel4_5_IRQHandler
+                        0x08002539         Code  Wk  startup_stm32f10x_hd.o [1]
+DebugMon_Handler        0x08002441         Code  Wk  startup_stm32f10x_hd.o [1]
+DelayResolution100us    0x08001045   0x22  Code  Gb  Test_WS0010.o [1]
+EXTI0_IRQHandler        0x08002465         Code  Wk  startup_stm32f10x_hd.o [1]
+EXTI15_10_IRQHandler    0x080024ed         Code  Wk  startup_stm32f10x_hd.o [1]
+EXTI1_IRQHandler        0x08002469         Code  Wk  startup_stm32f10x_hd.o [1]
+EXTI2_IRQHandler        0x0800246d         Code  Wk  startup_stm32f10x_hd.o [1]
+EXTI3_IRQHandler        0x08002471         Code  Wk  startup_stm32f10x_hd.o [1]
+EXTI4_IRQHandler        0x08002475         Code  Wk  startup_stm32f10x_hd.o [1]
+EXTI9_5_IRQHandler      0x080024a9         Code  Wk  startup_stm32f10x_hd.o [1]
+FLASH_IRQHandler        0x0800245d         Code  Wk  startup_stm32f10x_hd.o [1]
+FSMC_IRQHandler         0x0800250d         Code  Wk  startup_stm32f10x_hd.o [1]
+Font_11x16Bitmaps       0x08001a3c  0x2c0  Data  Gb  WS0010_font.o [1]
+Font_11x16Descriptors   0x0800219c   0x80  Data  Gb  WS0010_font.o [1]
+Font_11x16FontInfo      0x0800235c    0xc  Data  Gb  WS0010_font.o [1]
+Font_4x6Bitmaps         0x08001cfc  0x280  Data  Gb  WS0010_font.o [1]
+Font_4x6Descriptors     0x08001374  0x380  Data  Gb  WS0010_font.o [1]
+Font_4x6FontInfo        0x08002350    0xc  Data  Gb  WS0010_font.o [1]
+Font_8x16Bitmaps        0x08001f7c  0x1a0  Data  Gb  WS0010_font.o [1]
+Font_8x16Descriptors    0x0800211c   0x80  Data  Gb  WS0010_font.o [1]
+Font_8x16FontInfo       0x08002344    0xc  Data  Gb  WS0010_font.o [1]
+GPIO_Init               0x080010d9  0x136  Code  Gb  stm32f10x_gpio.o [1]
+GPIO_ReadInputData      0x0800120f    0x6  Code  Gb  stm32f10x_gpio.o [1]
+GPIO_WriteBit           0x08001215   0x12  Code  Gb  stm32f10x_gpio.o [1]
+HD44780RdIO             0x08000d6b   0x56  Code  Gb  drv_hd44780_l.o [1]
+HD44780RdStatus         0x08000911   0x22  Code  Gb  drv_hd44780.o [1]
+HD44780SetE             0x08000cdb   0x1a  Code  Gb  drv_hd44780_l.o [1]
+HD44780SetRS            0x08000cc1   0x1a  Code  Gb  drv_hd44780_l.o [1]
+HD44780SetRW            0x08000d51   0x1a  Code  Gb  drv_hd44780_l.o [1]
+HD44780WrComm           0x080008f1   0x20  Code  Gb  drv_hd44780.o [1]
+HD44780WrData           0x080008d1   0x20  Code  Gb  drv_hd44780.o [1]
+HD44780WrIO             0x08000cf5   0x5c  Code  Gb  drv_hd44780_l.o [1]
+HD44780_BusyCheck       0x08000933   0x5c  Code  Gb  drv_hd44780.o [1]
+HD44780_ClearDisplay    0x08000b75   0x18  Code  Gb  drv_hd44780.o [1]
+HD44780_IO_Init         0x08000c55   0x6c  Code  Gb  drv_hd44780_l.o [1]
+HD44780_PowerUpInit     0x0800098f  0x1a0  Code  Gb  drv_hd44780.o [1]
+HD44780_SetMode         0x08000b2f   0x46  Code  Gb  drv_hd44780.o [1]
+HD44780_StrShow         0x080007ed   0xd2  Code  Gb  WS0010_GR.o [1]
+HD44780_WrCGRAM         0x08000b8d   0xae  Code  Gb  drv_hd44780.o [1]
+HD4478_Ctrl             0x20000000    0x4  Data  Gb  drv_hd44780.o [1]
+HardFault_Handler       0x0800242d         Code  Wk  startup_stm32f10x_hd.o [1]
+I2C1_ER_IRQHandler      0x080024cd         Code  Wk  startup_stm32f10x_hd.o [1]
+I2C1_EV_IRQHandler      0x080024c9         Code  Wk  startup_stm32f10x_hd.o [1]
+I2C2_ER_IRQHandler      0x080024d5         Code  Wk  startup_stm32f10x_hd.o [1]
+I2C2_EV_IRQHandler      0x080024d1         Code  Wk  startup_stm32f10x_hd.o [1]
+MemManage_Handler       0x08002431         Code  Wk  startup_stm32f10x_hd.o [1]
+NMI_Handler             0x08002429         Code  Wk  startup_stm32f10x_hd.o [1]
+PVD_IRQHandler          0x08002451         Code  Wk  startup_stm32f10x_hd.o [1]
+PendSV_Handler          0x08002445         Code  Wk  startup_stm32f10x_hd.o [1]
+RCC_APB2PeriphClockCmd  0x08001095   0x1e  Code  Gb  stm32f10x_rcc.o [1]
+RCC_APB2PeriphResetCmd  0x080010b3   0x1e  Code  Gb  stm32f10x_rcc.o [1]
+RCC_IRQHandler          0x08002461         Code  Wk  startup_stm32f10x_hd.o [1]
+RTCAlarm_IRQHandler     0x080024f1         Code  Wk  startup_stm32f10x_hd.o [1]
+RTC_IRQHandler          0x08002459         Code  Wk  startup_stm32f10x_hd.o [1]
+Region$$Table$$Base     0x08002244          --   Gb  - Linker created -
+Region$$Table$$Limit    0x08002258          --   Gb  - Linker created -
+Reset_Handler           0x080022bd         Code  Wk  startup_stm32f10x_hd.o [1]
+SDIO_IRQHandler         0x08002511         Code  Wk  startup_stm32f10x_hd.o [1]
+SPI1_IRQHandler         0x080024d9         Code  Wk  startup_stm32f10x_hd.o [1]
+SPI2_IRQHandler         0x080024dd         Code  Wk  startup_stm32f10x_hd.o [1]
+SPI3_IRQHandler         0x08002519         Code  Wk  startup_stm32f10x_hd.o [1]
+STDfontLCD_7ptBitmaps   0x080016f4  0x348  Data  Gb  WS0010_font.o [1]
+STDfontLCD_7ptDescriptors
+                        0x08000130  0x400  Data  Gb  WS0010_font.o [1]
+STDfontLCD_7ptFontInfo  0x08002338    0xc  Data  Gb  WS0010_font.o [1]
+SVC_Handler             0x0800243d         Code  Wk  startup_stm32f10x_hd.o [1]
+SetSysClock             0x08001275    0x8  Code  Lc  system_stm32f10x.o [1]
+SetSysClockTo72         0x0800127d   0xe0  Code  Lc  system_stm32f10x.o [1]
+SysTick_Handler         0x08002449         Code  Wk  startup_stm32f10x_hd.o [1]
+SystemInit              0x08001229   0x4c  Code  Gb  system_stm32f10x.o [1]
+TAMPER_IRQHandler       0x08002455         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM1_BRK_IRQHandler     0x080024ad         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM1_CC_IRQHandler      0x080024b9         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM1_TRG_COM_IRQHandler
+                        0x080024b5         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM1_UP_IRQHandler      0x080024b1         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM2_IRQHandler         0x080024bd         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM3_IRQHandler         0x080024c1         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM4_IRQHandler         0x080024c5         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM5_IRQHandler         0x08002515         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM6_IRQHandler         0x08002525         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM7_IRQHandler         0x08002529         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM8_BRK_IRQHandler     0x080024f9         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM8_CC_IRQHandler      0x08002505         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM8_TRG_COM_IRQHandler
+                        0x08002501         Code  Wk  startup_stm32f10x_hd.o [1]
+TIM8_UP_IRQHandler      0x080024fd         Code  Wk  startup_stm32f10x_hd.o [1]
+UART4_IRQHandler        0x0800251d         Code  Wk  startup_stm32f10x_hd.o [1]
+UART5_IRQHandler        0x08002521         Code  Wk  startup_stm32f10x_hd.o [1]
+USART1_IRQHandler       0x080024e1         Code  Wk  startup_stm32f10x_hd.o [1]
+USART2_IRQHandler       0x080024e5         Code  Wk  startup_stm32f10x_hd.o [1]
+USART3_IRQHandler       0x080024e9         Code  Wk  startup_stm32f10x_hd.o [1]
+USBWakeUp_IRQHandler    0x080024f5         Code  Wk  startup_stm32f10x_hd.o [1]
+USB_HP_CAN1_TX_IRQHandler
+                        0x08002499         Code  Wk  startup_stm32f10x_hd.o [1]
+USB_LP_CAN1_RX0_IRQHandler
+                        0x0800249d         Code  Wk  startup_stm32f10x_hd.o [1]
+UsageFault_Handler      0x08002439         Code  Wk  startup_stm32f10x_hd.o [1]
+WS0010_Command          0x08000531   0x16  Code  Gb  WS0010_GR.o [1]
+WS0010_Data             0x08000565   0x16  Code  Gb  WS0010_GR.o [1]
+WS0010_String_16        0x0800064d  0x1a0  Code  Gb  WS0010_GR.o [1]
+WS0010_String_8         0x0800057b   0xd2  Code  Gb  WS0010_GR.o [1]
+WS0010_Sw2GR            0x08000547   0x1e  Code  Gb  WS0010_GR.o [1]
+WWDG_IRQHandler         0x0800244d         Code  Wk  startup_stm32f10x_hd.o [1]
+__ICFEDIT_intvec_start__ {Abs}
+                        0x08000000          --   Gb  command line/config [2]
+__cmain                 0x08002259         Code  Gb  cmain.o [4]
+__exit                  0x08002285   0x14  Code  Gb  exit.o [5]
+__iar_copy_init3        0x08001067   0x2e  Code  Gb  copy_init3.o [4]
+__iar_data_init3        0x0800221d   0x28  Code  Gb  data_init3.o [4]
+__iar_program_start     0x08002299         Code  Gb  cstart_HD.o [1]
+__low_level_init        0x0800226f    0x4  Code  Gb  low_level_init.o [3]
+__vector_table          0x08000000         Data  Gb  startup_stm32f10x_hd.o [1]
+_call_main              0x08002265         Code  Gb  cmain.o [4]
+_exit                   0x08002279         Code  Gb  cexit.o [4]
+_main                   0x0800226b         Code  Gb  cmain.o [4]
+exit                    0x08002273    0x4  Code  Gb  exit.o [3]
+main                    0x08000dd1  0x1e8  Code  Gb  Test_WS0010.o [1]
+
+
+[1] = C:\projects\EPVD\Code\WS0010\Debug\Obj
+[2] = command line
+[3] = dl7M_tln.a
+[4] = rt7M_tl.a
+[5] = shb_l.a
+
+  4 372 bytes of readonly  code memory
+  5 164 bytes of readonly  data memory
+  6 916 bytes of readwrite data memory
+
+Errors: none
+Warnings: none
