@@ -1,6 +1,75 @@
 #include "dac_and_dds_func.h"
 
 //==============================================================================================
+void Relay_control(uint8_t relay,uint8_t state){
+	int Relay_address=0;
+	if(relay<1 || relay>3 || state>1) return;
+
+	while(Relay_address<=0x5) // Set all OUTx to zero
+	{
+		HAL_GPIO_WritePin(Control_bus_1_GPIO_Port, Control_bus_1_Pin,  Relay_address & 0x1     );
+		HAL_GPIO_WritePin(Control_bus_2_GPIO_Port, Control_bus_2_Pin, (Relay_address & 0x2) >>1);
+		HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (Relay_address & 0x4) >>2);
+
+		HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 0); // LVL 0
+
+		HAL_Delay(1); // wait 1ms
+		HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
+		HAL_Delay(1); // wait 1ms
+		HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1);
+		HAL_Delay(1); // wait 1ms
+		Relay_address++;
+	}
+
+
+	switch (relay)
+	{
+	case 3:
+		if (state==1){
+			Relay_address=0x5; //OUT6
+		}else{
+			Relay_address=0x4; //OUT5
+		} break;
+	case 2:
+		if (state==1){
+			Relay_address=0x3; //OUT4
+		}else{
+			Relay_address=0x2; //OUT3
+		} break;
+	case 1:
+		if (state==1){
+			Relay_address=0x1; //OUT2
+		}else{
+			Relay_address=0x0; //OUT1
+		} break;
+	}
+
+	HAL_GPIO_WritePin(Control_bus_1_GPIO_Port, Control_bus_1_Pin,  Relay_address & 0x1     );
+	HAL_GPIO_WritePin(Control_bus_2_GPIO_Port, Control_bus_2_Pin, (Relay_address & 0x2) >>1);
+	HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (Relay_address & 0x4) >>2);
+
+	HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 1); // LVL 1
+
+	HAL_Delay(1); // wait 1ms
+	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
+	HAL_Delay(1); // wait 1ms
+	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1); // End strobe
+	HAL_Delay(50); // wait 50ms
+
+	HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 0); // LVL 0
+
+	HAL_Delay(1); // wait 1ms
+	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
+	HAL_Delay(1); // wait 1ms
+	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1); // End strobe
+	HAL_Delay(1); // wait 1ms
+
+}
+
+//==============================================================================================
+
+
+//==============================================================================================
 void DAC_Write(uint32_t value)
 {
 
@@ -29,7 +98,7 @@ void DAC_SendInit(void)
 
 	DAC_tx_buffer=0x02000000; // Write CONFIG1
 	DAC_tx_buffer+=(cfg.PDN & 0x01)<<4;
-	DAC_tx_buffer+=(cfg.VREFVAL & 0x0F)<<6;
+	DAC_tx_buffer+=(cfg.VREFVAL & 0x06)<<6;
 	DAC_tx_buffer+=(cfg.FSET & 0x01)<<10;
 	DAC_tx_buffer+=(cfg.DSDO & 0x01)<<11;
 	DAC_tx_buffer+=(cfg.ENALMP & 0x01)<<12;

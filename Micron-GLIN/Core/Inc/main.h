@@ -91,7 +91,7 @@ typedef struct DAC_CONFIG1
 	//  1 : DAC power down
 } DAC_CONFIG1;
 
-DAC_CONFIG1 cfg;
+extern DAC_CONFIG1 cfg;
 
 /* USER CODE END ET */
 
@@ -170,6 +170,8 @@ extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 #define DATA_EEPROM_START_ADDR     0x08080000
 #define DATA_EEPROM_END_ADDR       0x080827FF
 #define DATA_EEPROM_PAGE_SIZE      0x8
+
+extern char lcd_buf[];
 
 /* USER CODE END Private defines */
 

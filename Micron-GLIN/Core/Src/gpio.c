@@ -58,11 +58,11 @@ void MX_GPIO_Init(void)
                           |DAC_SYNC_Pin|DAC_CLR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Display_RS_GPIO_Port, Display_RS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Display_RS_Pin|Display_Power_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Display_RW_Pin|Display_DB4_Pin|Display_EN_Pin|Display_Power_Pin
-                          |SPI2_NSS_Pin|Display_DB5_Pin|Display_DB6_Pin|Display_DB7_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, Display_RW_Pin|Display_DB4_Pin|Display_EN_Pin|SPI2_NSS_Pin
+                          |Display_DB5_Pin|Display_DB6_Pin|Display_DB7_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = Start_button_Pin;
@@ -93,12 +93,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(DAC_SYNC_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin */
-  GPIO_InitStruct.Pin = Display_RS_Pin|SPI2_NSS_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = Display_RS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(Display_RS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin
                            PBPin PBPin PBPin */
@@ -106,8 +106,15 @@ void MX_GPIO_Init(void)
                           |Display_DB5_Pin|Display_DB6_Pin|Display_DB7_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = SPI2_NSS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(SPI2_NSS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = Encode_Push_Pin;

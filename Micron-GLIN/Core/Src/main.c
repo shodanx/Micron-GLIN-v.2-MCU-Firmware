@@ -77,6 +77,12 @@ uint8_t OK[]="\r\n OK \n\rEnter command: ";
 uint8_t Error2[]="\r\n Value out of range \n\r\n\rEnter command: ";
 uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
 
+char myLCDstr[32];
+float temperature=10.23;
+uint16_t tmpx;
+
+
+
 //Calibration value
 float DDS_clock_frequecny=1E7;
 float DAC_fullrange_voltage;
@@ -86,6 +92,10 @@ float cal_DAC_down_voltage;
 float corr_coeff_1;
 float corr_coeff_2;
 float corr_coeff_3;
+
+uint32_t DAC_tx_buffer;
+uint16_t DAC_tx_tmp_buffer[2];
+DAC_CONFIG1 cfg;
 
 float DDS_FTW=0;
 float DDS_target_frequecny;
@@ -172,6 +182,15 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  init_LCD();
+
+
+  Relay_control(1,0); // x1 mode
+  Relay_control(2,1); // x2/x4 mode
+  Relay_control(3,1); // Output Enable
+
+  TMP117_Initialization(hi2c1);
+
 	HAL_Delay(500); //WarmUP
 
 	cal_DAC_up_voltage=binary_to_float(EEPROM_read(0x00)); // Read top voltage calibration from EEPROM in uV value
@@ -187,7 +206,9 @@ int main(void)
 	HAL_Delay(250); //WarmUP
 	DAC_SendInit();
 
-	DAC_Write(DAC_code); //Middle
+	//DAC_Write(DAC_code); //Middle
+	//DAC_Write(0xFFFFF);
+	DAC_Write(0x0);
 
 	HAL_Delay(10);
 	CDC_Transmit_FS(clear, strlen((const char *)clear));
@@ -202,6 +223,22 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
+		  while(1)
+		  {
+		  tmpx=TMP117_get_Temperature(hi2c1);
+		  temperature=tmpx*0.0078125;
+		  sprintf(lcd_buf,"Temp: %.2f",temperature);
+          LcdString(1, 1);
+
+		  sprintf(lcd_buf,"Hello world!");
+          LcdString(1, 2);
+          LcdUpdate();
+
+//		  sprintf(lcd_buf,"01234");
+//          LcdString(9, 1);
+//		  HAL_Delay(1000); //WarmUP
+		  }
+
 		if(USB_CDC_End_Line_Received)
 		{
 			uint8_t i=0;
