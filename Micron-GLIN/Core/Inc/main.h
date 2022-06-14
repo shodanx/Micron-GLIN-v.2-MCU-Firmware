@@ -117,8 +117,9 @@ extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 /* Private defines -----------------------------------------------------------*/
 #define Start_button_Pin GPIO_PIN_13
 #define Start_button_GPIO_Port GPIOC
-#define COUNT_EN_Pin GPIO_PIN_14
-#define COUNT_EN_GPIO_Port GPIOC
+#define Start_button_EXTI_IRQn EXTI15_10_IRQn
+#define Count_EN_Pin GPIO_PIN_14
+#define Count_EN_GPIO_Port GPIOC
 #define Relay_cs_Pin GPIO_PIN_15
 #define Relay_cs_GPIO_Port GPIOC
 #define Control_bus_0_Pin GPIO_PIN_0
@@ -145,8 +146,7 @@ extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 #define SPI2_NSS_GPIO_Port GPIOB
 #define Encode_Push_Pin GPIO_PIN_8
 #define Encode_Push_GPIO_Port GPIOA
-#define CPU_IRQ_Pin GPIO_PIN_9
-#define CPU_IRQ_GPIO_Port GPIOA
+#define Encode_Push_EXTI_IRQn EXTI9_5_IRQn
 #define DAC_ALARM_Pin GPIO_PIN_10
 #define DAC_ALARM_GPIO_Port GPIOA
 #define DAC_CLR_Pin GPIO_PIN_15

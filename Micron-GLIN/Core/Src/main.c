@@ -97,6 +97,7 @@ uint32_t DAC_tx_buffer;
 uint16_t DAC_tx_tmp_buffer[2];
 DAC_CONFIG1 cfg;
 
+uint8_t CPLD_WORD=0x1;
 float DDS_FTW=0;
 float DDS_target_frequecny;
 float DAC_target_speed;
@@ -116,6 +117,7 @@ uint8_t command_buffer[31];
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 
 void Write_to_circ_buffer(uint8_t);
@@ -180,13 +182,16 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_I2C1_Init();
+
+  /* Initialize interrupts */
+  MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
   init_LCD();
 
 
-  Relay_control(1,0); // x1 mode
-  Relay_control(2,1); // x2/x4 mode
+  Relay_control(1,1); // x1 mode
+  Relay_control(2,0); // x2/x4 mode
   Relay_control(3,1); // Output Enable
 
   TMP117_Initialization(hi2c1);
@@ -202,8 +207,8 @@ int main(void)
 
 	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 
-	DDS_Init();
 	HAL_Delay(250); //WarmUP
+	DDS_Init();
 	DAC_SendInit();
 
 	//DAC_Write(DAC_code); //Middle
@@ -217,14 +222,28 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim3);
 
 
+	CPLD_WORD=0xA;
+	CPLD_control(CPLD_WORD);
+//	DDS_Update();
+/*		while (1)
+		{
+			  tmpx=TMP117_get_Temperature(hi2c1);
+			  temperature=tmpx*0.0078125;
+			  sprintf(lcd_buf,"Temp: %.2f",temperature);
+	          LcdString(1, 1);
+
+			  sprintf(lcd_buf,"Hello world!");
+	          LcdString(1, 2);
+	          LcdUpdate();
+		}
+*/
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		  while(1)
-		  {
 		  tmpx=TMP117_get_Temperature(hi2c1);
 		  temperature=tmpx*0.0078125;
 		  sprintf(lcd_buf,"Temp: %.2f",temperature);
@@ -233,11 +252,6 @@ int main(void)
 		  sprintf(lcd_buf,"Hello world!");
           LcdString(1, 2);
           LcdUpdate();
-
-//		  sprintf(lcd_buf,"01234");
-//          LcdString(9, 1);
-//		  HAL_Delay(1000); //WarmUP
-		  }
 
 		if(USB_CDC_End_Line_Received)
 		{
@@ -312,6 +326,17 @@ void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief NVIC Configuration.
+  * @retval None
+  */
+static void MX_NVIC_Init(void)
+{
+  /* EXTI9_5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+}
+
 /* USER CODE BEGIN 4 */
 //==============================================================================================
 
@@ -337,7 +362,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	DAC_Write_FAST();
 	Ramp_dac_step_complete=1;
 
-	if(GPIO_Pin == GPIO_PIN_2)
+	if(GPIO_Pin == GPIO_PIN_9)
 	{
 		if(DAC_code_direction)
 		{
@@ -351,7 +376,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 
 			} else  {
-				HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
+				CPLD_control(0x0); // Disable LDAC signal
+
 				cfg.LDACMODE=0;
 				DAC_SendInit();
 				CDC_Transmit_FS(Done, strlen((const char *)Done));  // SEND ERROR TO CDC!!!
@@ -370,7 +396,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 
 			} else {
-				HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
+				CPLD_control(0x0); // Disable LDAC signal
 				cfg.LDACMODE=0;
 				DAC_SendInit();
 				CDC_Transmit_FS(Done, strlen((const char *)Done));  // SEND ERROR TO CDC!!!
@@ -458,10 +484,9 @@ void Parsing_command(void)
 	{
 		if(!(strcmp(decoded_string_2,"START"))){
 			DAC_TEMP_CAL();
-			HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_RESET); // Enable LDAC signal
+			CPLD_control(CPLD_WORD); // Enable LDAC signal
 			cfg.LDACMODE=1;
 			DAC_SendInit();
-			DDS_Init();
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
 			HAL_Delay(10);
@@ -470,7 +495,7 @@ void Parsing_command(void)
 		else
 		{
 			if(!(strcmp(decoded_string_2,"STOP"))){
-				HAL_GPIO_WritePin(COUNT_EN_GPIO_Port, COUNT_EN_Pin, GPIO_PIN_SET); // Disable LDAC signal
+				CPLD_control(0x0); // Disable LDAC signal
 				cfg.LDACMODE=0;
 				DAC_SendInit();
 				HAL_Delay(10);
@@ -603,12 +628,11 @@ void Parsing_command(void)
 	if(!(strcmp(decoded_string_1,"DAC_CAL_TOP")))
 	{
 		atof_tmp=atof(decoded_string_2);
-		if(atof_tmp>9.9 && atof_tmp<10.1)
+		if((atof_tmp<10.1 && atof_tmp>9.9) || (atof_tmp>6.8 && atof_tmp<7.1))
 		{
 			cal_DAC_up_voltage=atof_tmp;
 			EEPROM_write(0x00,float_to_binary(cal_DAC_up_voltage)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
-			DDS_Init();
 
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
@@ -629,12 +653,11 @@ void Parsing_command(void)
 	if(!(strcmp(decoded_string_1,"DAC_CAL_DOWN")))
 	{
 		atof_tmp=atof(decoded_string_2);
-		if(atof_tmp>-10.1 && atof_tmp<-9.9)
+		if((atof_tmp>-10.1 && atof_tmp<-9.9) || (atof_tmp<-6.8 && atof_tmp>-7.1))
 		{
 			cal_DAC_down_voltage=atof_tmp;
 			EEPROM_write(0x08,float_to_binary(cal_DAC_down_voltage)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
-			DDS_Init();
 
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
@@ -665,7 +688,6 @@ void Parsing_command(void)
 		else
 		{
 			DAC_target_speed=atof_tmp;
-			DDS_Init();
 
 			HAL_Delay(10);
 			CDC_Transmit_FS(OK, strlen((const char *)OK));
