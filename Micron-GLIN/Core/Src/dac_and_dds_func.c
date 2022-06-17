@@ -120,7 +120,6 @@ void CPLD_control(uint8_t divide_coeff){
 //==============================================================================================
 void DAC_Write(uint32_t value)
 {
-
 	DAC_tx_buffer=0x01000000; // Write DAC-DATA
 	DAC_tx_buffer+=(value & 0xFFFFF)<<4;
 
@@ -130,6 +129,7 @@ void DAC_Write(uint32_t value)
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,2,2);
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
+	DAC_code=value;
 }
 
 //==============================================================================================
@@ -173,15 +173,11 @@ void DAC_TEMP_CAL(void)
 
 	uint16_t spi_receive[2]={0x0,0x0},DAC_tx_tmp_buffer2[2],ALM=0;
 
-	//uint8_t count_tmp=HAL_GPIO_ReadPin(COUNT_EN_GPIO_Port, COUNT_EN_Pin); // Save LDAC signal state
-
-	//	DDS_prepare_to_tempcal();
-
 	//CPLD_control(0x0); // Disable LDAC signal
 
 	cfg.EN_TMP_CAL=1;
 	DAC_SendInit();
-	HAL_Delay(10);
+	//HAL_Delay(10);
 
 	DAC_tx_buffer=0x04000100; // Write TRIGGER RCLTMP
 
@@ -197,7 +193,7 @@ void DAC_TEMP_CAL(void)
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,2,2);
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
 
-	HAL_Delay(500); // Wait some time....
+	//HAL_Delay(500); // Wait some time....
 
 	do{ // Check complete flag
 		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
@@ -208,7 +204,7 @@ void DAC_TEMP_CAL(void)
 		HAL_SPI_Receive(&hspi1,(uint8_t *)spi_receive, 2, 2);
 		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
 		ALM=(spi_receive[1] & 0x1000) >> 12;
-		if(ALM!=1)HAL_Delay(1000);
+		if(ALM!=1)HAL_Delay(10);
 	}while(ALM!=1);
 }
 

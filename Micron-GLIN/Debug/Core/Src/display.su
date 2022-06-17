@@ -15,10 +15,10 @@
 ../Core/Src/display.c:272:6:LcdChrBig	24	static
 ../Core/Src/display.c:305:6:LcdStringBig	24	static
 ../Core/Src/display.c:322:6:pulse_e	8	static
-../Core/Src/display.c:335:6:send_nibble	16	static
-../Core/Src/display.c:361:6:send_data	16	static
-../Core/Src/display.c:369:5:check_busy_flag	32	static
-../Core/Src/display.c:395:6:init_LCD	8	static
-../Core/Src/display.c:448:6:init_LCD_pins	8	static
-../Core/Src/display.c:454:6:lcd_write_byte	16	static
-../Core/Src/display.c:469:6:LcdBarLine	40	static
+../Core/Src/display.c:328:6:send_nibble	16	static
+../Core/Src/display.c:354:6:send_data	16	static
+../Core/Src/display.c:362:5:check_busy_flag	32	static
+../Core/Src/display.c:388:6:init_LCD	8	static
+../Core/Src/display.c:441:6:init_LCD_pins	8	static
+../Core/Src/display.c:447:6:lcd_write_byte	16	static
+../Core/Src/display.c:458:6:LcdBarLine	40	static

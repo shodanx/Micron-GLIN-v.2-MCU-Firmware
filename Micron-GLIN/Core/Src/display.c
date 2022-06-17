@@ -321,15 +321,8 @@ void LcdStringBig(unsigned char x, unsigned char y)     //Displays a string at c
 
 void pulse_e() //импульс на вход Е индикатора
 {
-//    PIN_ON(PIN_E);
-	//    delay_us(100);
-	//    PIN_OFF(PIN_E);
-	//    delay_us(39);
-
 	HAL_GPIO_WritePin(Display_EN_GPIO_Port, Display_EN_Pin, GPIO_PIN_SET);//    PIN_ON(PIN_E);
-	//HAL_Delay(1);
     HAL_GPIO_WritePin(Display_EN_GPIO_Port, Display_EN_Pin, GPIO_PIN_RESET);//  PIN_OFF(PIN_E);
-    //HAL_Delay(1);
 }
 
 void send_nibble(unsigned char data) //полубайтовый вывод
@@ -455,13 +448,9 @@ void lcd_write_byte(unsigned char addr, unsigned char data)
 {
 
 lcd44780_RS_0;
-//HAL_Delay(1);
 send_data(addr);
-//HAL_Delay(1);
 lcd44780_RS_1;
-//HAL_Delay(1);
 send_data(data);
-//HAL_Delay(1);
 while(check_busy_flag());
 
 }

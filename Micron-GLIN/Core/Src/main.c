@@ -139,7 +139,7 @@ int main(void)
 	cfg.TNH_MASK=0x00; // This bit is writable only when FSET = 0
 	cfg.EN_TMP_CAL=0; // Temperature calibration feature enabled
 
-	DAC_target_speed=0.001; //  V/s
+	DAC_target_speed=0.9; //  V/s
 	DAC_code=DAC_CODE_MIDDLE;
 	DAC_code_direction=0;
 
@@ -201,6 +201,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
+		if(cfg.LDACMODE==1){
+			sprintf(lcd_buf,"ARM      %01u:%02u:%02u",eta_hours,eta_minute,eta_second);
+			LcdString(1, 2);
+			LcdBarLine(DAC_code);
+		}
+		else
+		{
+				sprintf(lcd_buf,"STANDBY");
+				LcdString(1, 2);
+		}
+		LcdUpdate();
+		LcdClear_massive();
+
 		if(USB_CDC_End_Line_Received)
 		{
 			uint8_t i=0;

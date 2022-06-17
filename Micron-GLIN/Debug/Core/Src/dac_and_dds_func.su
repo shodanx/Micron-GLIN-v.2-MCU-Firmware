@@ -4,6 +4,6 @@
 ../Core/Src/dac_and_dds_func.c:136:6:DAC_Write_FAST	8	static
 ../Core/Src/dac_and_dds_func.c:144:6:DAC_SendInit	8	static
 ../Core/Src/dac_and_dds_func.c:169:6:DAC_TEMP_CAL	32	static
-../Core/Src/dac_and_dds_func.c:215:6:DDS_Calculation	40	static
-../Core/Src/dac_and_dds_func.c:255:6:DDS_Init	24	static
-../Core/Src/dac_and_dds_func.c:326:6:DDS_Update	24	static
+../Core/Src/dac_and_dds_func.c:211:6:DDS_Calculation	40	static
+../Core/Src/dac_and_dds_func.c:251:6:DDS_Init	24	static
+../Core/Src/dac_and_dds_func.c:322:6:DDS_Update	24	static

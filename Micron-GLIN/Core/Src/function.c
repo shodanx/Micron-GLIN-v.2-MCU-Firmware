@@ -3,7 +3,6 @@
 #include "usb_device.h"
 #include "circular_buffer.h"
 
-extern void DDS_Init(void);
 extern void DDS_Update(void);
 extern void DDS_Calculation(void);
 extern void DAC_SendInit(void);
@@ -63,42 +62,30 @@ uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
 
 void send_answer_to_CDC(uint8_t type)
 {
+	uint8_t cdc_counter=0;
+
 	switch(type)
 	{
 	case ERROR_TYPE_1:
-		HAL_Delay(10);
-		CDC_Transmit_FS(Error1, strlen((const char *)Error1));  // SEND ERROR TO CDC!!!
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(Error1, strlen((const char *)Error1))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case ERROR_TYPE_2:
-		HAL_Delay(10);
-		CDC_Transmit_FS(Error2, strlen((const char *)Error2));  // SEND ERROR TO CDC!!!
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(Error2, strlen((const char *)Error2))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case OK_TYPE_1:
-		HAL_Delay(10);
-		CDC_Transmit_FS(OK, strlen((const char *)OK));
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(OK, strlen((const char *)OK))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case OK_TYPE_2:
-		HAL_Delay(10);
-		CDC_Transmit_FS(OK_Enter, strlen((const char *)OK_Enter));
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(OK_Enter, strlen((const char *)OK_Enter))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case CLEAR_TYPE_1:
-		HAL_Delay(10);
-		CDC_Transmit_FS(clear, strlen((const char *)clear));
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(clear, strlen((const char *)clear))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case DONE_TYPE_1:
-		HAL_Delay(10);
-		CDC_Transmit_FS(Done, strlen((const char *)Done));
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(Done, strlen((const char *)Done))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case RUN_CAL_TYPE_TEMP:
-		HAL_Delay(10);
-		CDC_Transmit_FS(run_cal, strlen((const char *)run_cal));
-		HAL_Delay(10);
+		while((CDC_Transmit_FS(run_cal, strlen((const char *)run_cal))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	}
 }
