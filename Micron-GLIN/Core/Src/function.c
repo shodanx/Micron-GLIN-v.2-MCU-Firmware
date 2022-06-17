@@ -21,6 +21,11 @@ extern FunctionalState DAC_code_direction;
 extern float DAC_fullrange_voltage;
 extern float cal_DAC_up_voltage;
 extern float cal_DAC_down_voltage;
+extern float corr_coeff_1;
+extern float corr_coeff_2;
+extern float corr_coeff_3;
+
+
 
 volatile FunctionalState USB_CDC_End_Line_Received;
 uint8_t command_buffer[31];
@@ -148,19 +153,19 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 		DAC_Write(DAC_CODE_MIDDLE);
 		break;
 	case DAC_CAL_POLY_A:
-		EEPROM_write(0x10,float_to_binary(tmpx));
+		EEPROM_write(corr_coeff_1_EEPROM_ADDRESS,float_to_binary(tmpx));
 		break;
 	case DAC_CAL_POLY_B:
-		EEPROM_write(0x18,float_to_binary(tmpx));
+		EEPROM_write(corr_coeff_2_EEPROM_ADDRESS,float_to_binary(tmpx));
 		break;
 	case DAC_CAL_POLY_C:
-		EEPROM_write(0x20,float_to_binary(tmpx));
+		EEPROM_write(corr_coeff_3_EEPROM_ADDRESS,float_to_binary(tmpx));
 		break;
 	case DAC_CAL_TOP:
 		if((tmpx<10.1 && tmpx>9.9) || (tmpx>6.8 && tmpx<7.1))
 		{
 			cal_DAC_up_voltage=tmpx;
-			EEPROM_write(0x00,float_to_binary(tmpx)); // Write top voltage calibration to EEPROM in uV value
+			EEPROM_write(cal_DAC_up_voltage_EEPROM_ADDRESS,float_to_binary(tmpx)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 		}
 		else return 0;
@@ -169,7 +174,7 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 		if((tmpx>-10.1 && tmpx<-9.9) || (tmpx<-6.8 && tmpx>-7.1))
 		{
 			cal_DAC_down_voltage=tmpx;
-			EEPROM_write(0x08,float_to_binary(tmpx)); // Write top voltage calibration to EEPROM in uV value
+			EEPROM_write(cal_DAC_down_voltage_EEPROM_ADDRESS,float_to_binary(tmpx)); // Write top voltage calibration to EEPROM in uV value
 			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 		}
 		else return 0;
@@ -178,9 +183,17 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 	return 1;
 
 }
-
-
 /////////////////////////////////////////////////////////
+void load_data_from_EEPROM(void)
+{
+	cal_DAC_up_voltage=binary_to_float(EEPROM_read(cal_DAC_up_voltage_EEPROM_ADDRESS)); // Read top voltage calibration from EEPROM in uV value
+	cal_DAC_down_voltage=binary_to_float(EEPROM_read(cal_DAC_down_voltage_EEPROM_ADDRESS)); // Read top voltage calibration from EEPROM in uV value
+	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
+
+	corr_coeff_1=binary_to_float(EEPROM_read(corr_coeff_1_EEPROM_ADDRESS));
+	corr_coeff_2=binary_to_float(EEPROM_read(corr_coeff_2_EEPROM_ADDRESS));
+	corr_coeff_3=binary_to_float(EEPROM_read(corr_coeff_3_EEPROM_ADDRESS));
+}
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 

@@ -79,11 +79,6 @@ extern uint8_t command_buffer[31];
 
 int16_t Enc_Counter = 0;
 
-//Calibration value
-float corr_coeff_1;
-float corr_coeff_2;
-float corr_coeff_3;
-
 CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
 
 uint32_t DAC_tx_buffer;
@@ -107,6 +102,7 @@ float cal_DAC_down_voltage;
 uint32_t DAC_code=0x0;
 FunctionalState DAC_code_direction;
 
+FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
 FunctionalState Ramp_dac_step_complete=0;
 
@@ -117,7 +113,7 @@ void SystemClock_Config(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 
-void Parsing_command(void);
+void Parsing_USB_command(void);
 
 /* USER CODE END PFP */
 
@@ -144,7 +140,7 @@ int main(void)
 	cfg.EN_TMP_CAL=0; // Temperature calibration feature enabled
 
 	DAC_target_speed=0.001; //  V/s
-	DAC_code=0x7FFFF;
+	DAC_code=DAC_CODE_MIDDLE;
 	DAC_code_direction=0;
 
   /* USER CODE END 1 */
@@ -173,62 +169,31 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_I2C1_Init();
+  MX_TIM2_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_Delay(750); //WarmUP
+  load_data_from_EEPROM();
+  TMP117_Initialization(hi2c1);
   init_LCD();
+  DDS_Init();
+  DAC_SendInit();
+  DAC_Write(DAC_code);
+
+  HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
 
 
   Relay_control(1,0); // x1 mode
   Relay_control(2,0); // x2/x4 mode
-  Relay_control(3,1); // Output Enable
+  Relay_control(3,0); // Output Enable
+  CPLD_control(CPLD_WORD);
 
-  TMP117_Initialization(hi2c1);
-
-	HAL_Delay(500); //WarmUP
-
-	cal_DAC_up_voltage=binary_to_float(EEPROM_read(0x00)); // Read top voltage calibration from EEPROM in uV value
-	cal_DAC_down_voltage=binary_to_float(EEPROM_read(0x08)); // Read top voltage calibration from EEPROM in uV value
-
-	corr_coeff_1=binary_to_float(EEPROM_read(0x10));
-	corr_coeff_2=binary_to_float(EEPROM_read(0x18));
-	corr_coeff_3=binary_to_float(EEPROM_read(0x20));
-
-	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
-
-	HAL_Delay(250); //WarmUP
-	DDS_Init();
-	DAC_SendInit();
-
-	//DAC_Write(DAC_code); //Middle
-	//DAC_Write(0xFFFFF);
-	DAC_Write(0x0);
-
-	send_answer_to_CDC(CLEAR_TYPE_1);
-
-	HAL_TIM_Base_Start_IT(&htim3);
-
-	CPLD_control(CPLD_WORD);
-
-
-	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-
-//	DDS_Update();
-
-/*		while (1)
-		{
-			  tmpx=TMP117_get_Temperature(hi2c1);
-			  temperature=tmpx*0.0078125;
-			  sprintf(lcd_buf,"Temp: %.2f",temperature);
-	          LcdString(1, 1);
-
-			  sprintf(lcd_buf,"Hello world!");
-	          LcdString(1, 2);
-	          LcdUpdate();
-		}
-*/
+  send_answer_to_CDC(CLEAR_TYPE_1);
 
   /* USER CODE END 2 */
 
@@ -236,30 +201,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-
-          //for(uint16_t tx=0;tx<1000;tx++){
-        	  LcdClear_massive();
-    		  tmpx=TMP117_get_Temperature(hi2c1);
-    		  temperature=tmpx*0.0078125;
-    		  sprintf(lcd_buf,"': %.4fmV/s",DAC_target_speed*1000);
-              LcdString(1, 1);
-
-//              Enc_Counter = TIM4->CNT;
-//        	  sprintf(lcd_buf,"%d",Enc_Counter);
-//        	  LcdString(1, 2);
-
-              if(cfg.LDACMODE==1){
-            	  sprintf(lcd_buf,"ARM      %01u:%02u:%02u",eta_hours,eta_minute,eta_second);
-            	  LcdString(1, 2);
-            	  LcdBarLine(DAC_code);	//HAL_Delay(100);
-              }
-              else
-              {
-            	  sprintf(lcd_buf,"STANDBY");
-            	  LcdString(1, 2);
-              }
-        	  LcdUpdate();
-
 		if(USB_CDC_End_Line_Received)
 		{
 			uint8_t i=0;
@@ -269,7 +210,7 @@ int main(void)
 				if (command_buffer[i]=='\n' || command_buffer[i]=='\r') break;
 				i++;
 			}
-			Parsing_command();
+			Parsing_USB_command();
 		}
 
 		if(Need_update_DDS)
@@ -281,6 +222,10 @@ int main(void)
 				Ramp_dac_step_complete=0;
 			}
 			DDS_Calculation();
+
+		}
+		if(Need_update_Display)
+		{
 
 		}
 
@@ -351,11 +296,16 @@ static void MX_NVIC_Init(void)
 // Callback: timer has rolled over
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	// Check which version of the timer triggered this callback and toggle LED
-	if (htim == &htim3 )
+	if (htim == &htim3 )// INL correction, each 500ms
 	{
-		Need_update_DDS=1;
+		if(cfg.LDACMODE==1)Need_update_DDS=1;
 	}
+
+	if (htim == &htim2 )//User interface workload, each 10ms
+	{
+		Need_update_Display=1;
+	}
+
 }
 
 /**
@@ -410,7 +360,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 }
 
-void Parsing_command(void)
+void Parsing_USB_command(void)
 {
 	float atof_tmp;
 	char *found;

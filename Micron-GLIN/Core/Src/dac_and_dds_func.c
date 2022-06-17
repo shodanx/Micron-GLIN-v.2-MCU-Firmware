@@ -6,9 +6,9 @@ extern float DAC_fullrange_voltage;
 extern uint32_t DAC_code;
 extern uint8_t CPLD_WORD;
 
-extern float corr_coeff_1;
-extern float corr_coeff_2;
-extern float corr_coeff_3;
+float corr_coeff_1;
+float corr_coeff_2;
+float corr_coeff_3;
 
 extern uint8_t eta_hours,eta_minute,eta_second;
 extern FunctionalState DAC_code_direction;

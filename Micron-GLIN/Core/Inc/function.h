@@ -33,9 +33,15 @@
 #define DAC_CODE_DOWN	0x0
 #define DAC_CODE_MIDDLE	0x7FFFF
 
-#define DATA_EEPROM_START_ADDR     0x08080000
-#define DATA_EEPROM_END_ADDR       0x080827FF
-#define DATA_EEPROM_PAGE_SIZE      0x8
+#define DATA_EEPROM_START_ADDR     			0x08080000
+#define DATA_EEPROM_END_ADDR       			0x080827FF
+#define DATA_EEPROM_PAGE_SIZE      			0x8
+
+#define cal_DAC_up_voltage_EEPROM_ADDRESS 	0x0000
+#define cal_DAC_down_voltage_EEPROM_ADDRESS 0x0008
+#define corr_coeff_1_EEPROM_ADDRESS 		0x0010
+#define corr_coeff_2_EEPROM_ADDRESS 		0x0018
+#define corr_coeff_3_EEPROM_ADDRESS 		0x0020
 
 void send_answer_to_CDC(uint8_t);
 void cmd_SWEEP_START();
@@ -50,6 +56,6 @@ float binary_to_float(uint32_t);
 uint32_t EEPROM_read(uint32_t);
 void EEPROM_write(uint32_t, uint32_t);
 float binary_to_float(uint32_t);
-
+void load_data_from_EEPROM(void);
 
 #endif /* INC_FUNCTION_H_ */
