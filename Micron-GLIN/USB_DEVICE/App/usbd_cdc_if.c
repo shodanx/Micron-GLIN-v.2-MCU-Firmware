@@ -112,9 +112,9 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 
-extern void Write_to_circ_buffer(uint32_t);
-extern void Delete_from_circ_buffer(uint32_t);
-extern FunctionalState USB_CDC_End_Line_Received;
+//extern void Write_to_circ_buffer(uint32_t);
+//extern void Delete_from_circ_buffer(uint32_t);
+extern volatile FunctionalState USB_CDC_End_Line_Received;
 
 /* USER CODE END EXPORTED_VARIABLES */
 

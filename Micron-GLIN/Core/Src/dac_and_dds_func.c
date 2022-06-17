@@ -1,5 +1,27 @@
 #include "dac_and_dds_func.h"
 
+extern float DDS_clock_frequecny;
+extern float DAC_fullrange_voltage;
+
+extern uint32_t DAC_code;
+extern uint8_t CPLD_WORD;
+
+extern float corr_coeff_1;
+extern float corr_coeff_2;
+extern float corr_coeff_3;
+
+extern uint8_t eta_hours,eta_minute,eta_second;
+extern FunctionalState DAC_code_direction;
+
+extern float DDS_target_frequecny;
+extern float DAC_target_speed;
+extern uint32_t DDS_target_multipiller;
+
+extern uint32_t DAC_tx_buffer;
+extern uint16_t DAC_tx_tmp_buffer[2];
+extern float DDS_FTW;
+
+
 //==============================================================================================
 void Relay_control(uint8_t relay,uint8_t state){
 	int Relay_address=0;
@@ -80,6 +102,15 @@ void CPLD_control(uint8_t divide_coeff){
 	HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (divide_coeff & 0x8) >>3);
 	HAL_GPIO_WritePin(Count_EN_GPIO_Port, Count_EN_Pin, GPIO_PIN_SET); // Send strobe
 	HAL_GPIO_WritePin(Count_EN_GPIO_Port, Count_EN_Pin, GPIO_PIN_RESET);
+
+	if(divide_coeff==0x00)
+	{
+		cfg.LDACMODE=0;
+	}
+	else
+	{
+		cfg.LDACMODE=1;
+	}
 }
 
 //==============================================================================================
@@ -140,9 +171,6 @@ void DAC_TEMP_CAL(void)
 	uint32_t DAC_tx_buffer;
 	uint16_t DAC_tx_tmp_buffer[2];
 
-	uint8_t OK[]="OK\n\r";
-	uint8_t run_cal[]="\r\nCalibration in progress..";
-
 	uint16_t spi_receive[2]={0x0,0x0},DAC_tx_tmp_buffer2[2],ALM=0;
 
 	//uint8_t count_tmp=HAL_GPIO_ReadPin(COUNT_EN_GPIO_Port, COUNT_EN_Pin); // Save LDAC signal state
@@ -169,8 +197,6 @@ void DAC_TEMP_CAL(void)
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,2,2);
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
 
-	HAL_Delay(10);
-	CDC_Transmit_FS(run_cal, strlen((const char *)run_cal));
 	HAL_Delay(500); // Wait some time....
 
 	do{ // Check complete flag
@@ -184,13 +210,6 @@ void DAC_TEMP_CAL(void)
 		ALM=(spi_receive[1] & 0x1000) >> 12;
 		if(ALM!=1)HAL_Delay(1000);
 	}while(ALM!=1);
-
-	HAL_Delay(10);
-	CDC_Transmit_FS(OK, strlen((const char *)OK));
-	HAL_Delay(10);
-
-	//DDS_Init();
-	//CPLD_control(CPLD_WORD); // Back LDAC signal state
 }
 
 void DDS_Calculation(void)
@@ -199,6 +218,8 @@ void DDS_Calculation(void)
 	float dac_counts=1048576;
 	float corr_coeff;
 	float dac_tmp=DAC_code;
+	float second_left;
+	uint32_t codes_left;
 
 	corr_coeff=corr_coeff_1*dac_tmp*dac_tmp;
 	corr_coeff+=corr_coeff_2*dac_tmp;
@@ -214,6 +235,20 @@ void DDS_Calculation(void)
 	} else DDS_target_multipiller = 1;
 
 	DDS_FTW=(((DDS_target_frequecny/corr_coeff)*((1<<CPLD_WORD)+1))/DDS_clock_frequecny)*(float)0xFFFFFFFF;
+
+	if(DAC_code_direction)
+	{
+		codes_left=0xFFFFF-DAC_code;
+	}
+	else
+	{
+		codes_left=DAC_code;
+	}
+
+	second_left=codes_left/DDS_target_multipiller/DDS_target_frequecny;
+	eta_second=(uint32_t)second_left % 60;
+	eta_minute=(uint32_t)(second_left / 60) % 60;
+	eta_hours=(uint32_t) second_left / 3600;
 }
 
 //==============================================================================================

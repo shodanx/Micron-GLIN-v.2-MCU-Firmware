@@ -1,5 +1,5 @@
 Core/Src/dac_and_dds_func.o: ../Core/Src/dac_and_dds_func.c \
- ../Core/Inc/dac_and_dds_func.h ../Core/Inc/main.h \
+ ../Core/Inc/dac_and_dds_func.h ../Core/Inc/spi.h ../Core/Inc/main.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
  ../Core/Inc/stm32l1xx_hal_conf.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
@@ -30,9 +30,9 @@ Core/Src/dac_and_dds_func.o: ../Core/Src/dac_and_dds_func.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_usb.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h \
- ../Core/Inc/dac_and_dds_func.h ../Core/Inc/spi.h
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h
 ../Core/Inc/dac_and_dds_func.h:
+../Core/Inc/spi.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h:
 ../Core/Inc/stm32l1xx_hal_conf.h:
@@ -65,5 +65,3 @@ Core/Src/dac_and_dds_func.o: ../Core/Src/dac_and_dds_func.c \
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_usb.h:
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h:
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h:
-../Core/Inc/dac_and_dds_func.h:
-../Core/Inc/spi.h:

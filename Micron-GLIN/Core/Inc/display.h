@@ -9,6 +9,9 @@
 #define INC_DISPLAY_H_
 
 #include "main.h"
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 
 #define PIXEL_OFF	0       // режимы отображения пикселя - используются в графических функциях
 #define PIXEL_ON	1
@@ -53,7 +56,7 @@ void LcdStringBig(unsigned char x, unsigned char y);    //Печатает бо�
 //***************************************************
 // UPDATE ##1
 void LcdBar(int x1, int y1, int x2, int y2, unsigned char persent);     // рисует прогресс-бар и заполняет его на "процент"
-void LcdBarLine(unsigned char line, unsigned char persent);     // рисуем прошресс-бар в указанной строке
+void LcdBarLine(uint32_t fill);     // рисуем прогресс-бар в второй строке
 void LcdStringInv(unsigned char x, unsigned char y);    // печатает строку в инверсном шрифте (удобно для настроек)
 
 void LcdClear_massive(void);

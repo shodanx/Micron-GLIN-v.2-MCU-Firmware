@@ -1,0 +1,55 @@
+/*
+ * function.h
+ *
+ *  Created on: 17 июн. 2022 г.
+ *      Author: User
+ */
+
+#ifndef INC_FUNCTION_H_
+#define INC_FUNCTION_H_
+
+#include <stdio.h>
+#include <string.h>
+#include <stdio.h>
+#include <string.h>
+
+
+#define ERROR_TYPE_1	0
+#define ERROR_TYPE_2	1
+#define OK_TYPE_1		2
+#define OK_TYPE_2		3
+#define CLEAR_TYPE_1	4
+#define DONE_TYPE_1		5
+#define DAC_CAL_TEMP	6
+#define DAC_CAL_POLY_A	7
+#define DAC_CAL_POLY_B	8
+#define DAC_CAL_POLY_C	9
+#define DAC_CAL_TOP		10
+#define DAC_CAL_DOWN	11
+#define NONE			12
+#define RUN_CAL_TYPE_TEMP 13
+
+#define DAC_CODE_TOP	0xFFFFF
+#define DAC_CODE_DOWN	0x0
+#define DAC_CODE_MIDDLE	0x7FFFF
+
+#define DATA_EEPROM_START_ADDR     0x08080000
+#define DATA_EEPROM_END_ADDR       0x080827FF
+#define DATA_EEPROM_PAGE_SIZE      0x8
+
+void send_answer_to_CDC(uint8_t);
+void cmd_SWEEP_START();
+void cmd_SWEEP_STOP();
+void cmd_DAC_SET(uint32_t);
+
+FunctionalState cmd_CAL(uint8_t, float);
+
+uint32_t float_to_binary(float);
+float binary_to_float(uint32_t);
+
+uint32_t EEPROM_read(uint32_t);
+void EEPROM_write(uint32_t, uint32_t);
+float binary_to_float(uint32_t);
+
+
+#endif /* INC_FUNCTION_H_ */

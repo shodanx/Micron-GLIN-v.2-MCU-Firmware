@@ -45,7 +45,6 @@ void LcdUpdate(void)            //Copies the LCD cache into the device RAM
     {
       LcdSend(LcdCache[((i * LCD_X_RES) + j)], lcd_DATA);       //вычисляем адрес в фрейм буфере, и данные от туда грузим в дисплей.
     }
-
 }
 
 
@@ -441,6 +440,8 @@ void init_LCD() //инициализация ЖК
     send_data(0x01); //очистили от мусора ОЗУ (т.с. что clear())
     while(check_busy_flag());
 
+    LcdClear_massive();
+
 }
 
 
@@ -465,6 +466,38 @@ while(check_busy_flag());
 
 }
 
+void LcdBarLine(uint32_t fill)    // рисуем прогресс-бар в второй строке
+{
+	uint16_t i, full_fill_position;
+	float y;
 
+	if(fill>0xFFFFF)return;
+
+	// поиск свободного места в массиве кеша дисплея
+//	for (i = LCD_CACHSIZE-1; i > LCD_X_RES; i--) // поиск свободного места в массиве кеша дисплея, в указанной строке
+//		if(LcdCache[i]==0x00)
+//			found_free_position=i;
+	y=LCD_X_RES;
+	y*=8; //сколько всего диступно места
+	y/=(float)0xFFFFF;
+	y*=(float)fill;// получаем коэфицент заполнения прогрессбара
+	full_fill_position=floor(y/8);
+	//need_to_be_filled=(LCD_CACHSIZE-1-found_free_position)*8 - ;
+	for (i = LCD_X_RES; i < LCD_CACHSIZE; i++){ // заполнение прогрессбара
+		if(y!=0)
+		{
+			if(full_fill_position>(i-LCD_X_RES))
+			{
+				LcdCache[i]=LcdCache[i]^0xFF;
+			} else
+			{
+				y-=floor(y/8)*8;
+				LcdCache[i]=LcdCache[i]^((1<<(uint16_t)y)-1);
+				break;
+			}
+		}
+	}
+
+}
 
 

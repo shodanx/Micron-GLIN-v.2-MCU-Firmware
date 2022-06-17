@@ -1,0 +1,9 @@
+../Core/Src/function.c:59:6:send_answer_to_CDC	16	static
+../Core/Src/function.c:100:6:cmd_SWEEP_START	8	static
+../Core/Src/function.c:108:6:cmd_SWEEP_STOP	8	static
+../Core/Src/function.c:115:6:cmd_DAC_SET	16	static
+../Core/Src/function.c:137:17:cmd_CAL	24	static
+../Core/Src/function.c:194:7:binary_to_float	24	static
+../Core/Src/function.c:205:10:float_to_binary	32	static
+../Core/Src/function.c:225:10:EEPROM_read	24	static
+../Core/Src/function.c:239:6:EEPROM_write	24	static

@@ -1,6 +1,7 @@
 "./Circular-buffer/src/circular_buffer.o"
 "./Core/Src/dac_and_dds_func.o"
 "./Core/Src/display.o"
+"./Core/Src/function.o"
 "./Core/Src/gpio.o"
 "./Core/Src/i2c.o"
 "./Core/Src/main.o"

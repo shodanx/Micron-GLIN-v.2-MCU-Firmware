@@ -7,6 +7,7 @@
 C_SRCS += \
 ../Core/Src/dac_and_dds_func.c \
 ../Core/Src/display.c \
+../Core/Src/function.c \
 ../Core/Src/gpio.c \
 ../Core/Src/i2c.c \
 ../Core/Src/main.c \
@@ -22,6 +23,7 @@ C_SRCS += \
 C_DEPS += \
 ./Core/Src/dac_and_dds_func.d \
 ./Core/Src/display.d \
+./Core/Src/function.d \
 ./Core/Src/gpio.d \
 ./Core/Src/i2c.d \
 ./Core/Src/main.d \
@@ -37,6 +39,7 @@ C_DEPS += \
 OBJS += \
 ./Core/Src/dac_and_dds_func.o \
 ./Core/Src/display.o \
+./Core/Src/function.o \
 ./Core/Src/gpio.o \
 ./Core/Src/i2c.o \
 ./Core/Src/main.o \
@@ -57,7 +60,7 @@ Core/Src/%.o Core/Src/%.su: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/dac_and_dds_func.d ./Core/Src/dac_and_dds_func.o ./Core/Src/dac_and_dds_func.su ./Core/Src/display.d ./Core/Src/display.o ./Core/Src/display.su ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/gpio.su ./Core/Src/i2c.d ./Core/Src/i2c.o ./Core/Src/i2c.su ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/spi.d ./Core/Src/spi.o ./Core/Src/spi.su ./Core/Src/stm32l1xx_hal_msp.d ./Core/Src/stm32l1xx_hal_msp.o ./Core/Src/stm32l1xx_hal_msp.su ./Core/Src/stm32l1xx_it.d ./Core/Src/stm32l1xx_it.o ./Core/Src/stm32l1xx_it.su ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32l1xx.d ./Core/Src/system_stm32l1xx.o ./Core/Src/system_stm32l1xx.su ./Core/Src/tim.d ./Core/Src/tim.o ./Core/Src/tim.su ./Core/Src/tmp117.d ./Core/Src/tmp117.o ./Core/Src/tmp117.su
+	-$(RM) ./Core/Src/dac_and_dds_func.d ./Core/Src/dac_and_dds_func.o ./Core/Src/dac_and_dds_func.su ./Core/Src/display.d ./Core/Src/display.o ./Core/Src/display.su ./Core/Src/function.d ./Core/Src/function.o ./Core/Src/function.su ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/gpio.su ./Core/Src/i2c.d ./Core/Src/i2c.o ./Core/Src/i2c.su ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/spi.d ./Core/Src/spi.o ./Core/Src/spi.su ./Core/Src/stm32l1xx_hal_msp.d ./Core/Src/stm32l1xx_hal_msp.o ./Core/Src/stm32l1xx_hal_msp.su ./Core/Src/stm32l1xx_it.d ./Core/Src/stm32l1xx_it.o ./Core/Src/stm32l1xx_it.su ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32l1xx.d ./Core/Src/system_stm32l1xx.o ./Core/Src/system_stm32l1xx.su ./Core/Src/tim.d ./Core/Src/tim.o ./Core/Src/tim.su ./Core/Src/tmp117.d ./Core/Src/tmp117.o ./Core/Src/tmp117.su
 
 .PHONY: clean-Core-2f-Src
 

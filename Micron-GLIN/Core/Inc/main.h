@@ -32,7 +32,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "dac_and_dds_func.h"
+//#include "dac_and_dds_func.h"
+//#include "function.h"
 
 /* USER CODE END Includes */
 
@@ -89,9 +90,13 @@ typedef struct DAC_CONFIG1
 	FunctionalState PDN;			  // Powers down and power up the DAC
 	//  0 : DAC power up (default)
 	//  1 : DAC power down
+
+	FunctionalState RUN;
 } DAC_CONFIG1;
 
 extern DAC_CONFIG1 cfg;
+
+void Write_to_circ_buffer(uint8_t);
 
 /* USER CODE END ET */
 
@@ -109,8 +114,6 @@ extern DAC_CONFIG1 cfg;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
-extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 
 /* USER CODE END EFP */
 
@@ -157,19 +160,11 @@ extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 #define Display_DB6_GPIO_Port GPIOB
 #define Display_DB7_Pin GPIO_PIN_5
 #define Display_DB7_GPIO_Port GPIOB
-#define Encode_A_Pin GPIO_PIN_6
-#define Encode_A_GPIO_Port GPIOB
-#define Encode_B_Pin GPIO_PIN_7
-#define Encode_B_GPIO_Port GPIOB
 #define TMP117_SCL_Pin GPIO_PIN_8
 #define TMP117_SCL_GPIO_Port GPIOB
 #define TMP117_SDA_Pin GPIO_PIN_9
 #define TMP117_SDA_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-
-#define DATA_EEPROM_START_ADDR     0x08080000
-#define DATA_EEPROM_END_ADDR       0x080827FF
-#define DATA_EEPROM_PAGE_SIZE      0x8
 
 extern char lcd_buf[];
 
