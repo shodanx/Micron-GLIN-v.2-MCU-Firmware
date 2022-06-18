@@ -35,7 +35,8 @@ Core/Src/function.o: ../Core/Src/function.c \
  D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h \
  ../Core/Inc/main.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h
+ D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h \
+ ../Core/Inc/display.h ../Core/Inc/main.h
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h:
 ../Core/Inc/stm32l1xx_hal_conf.h:
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h:
@@ -73,3 +74,5 @@ D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/In
 D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h:
 ../Core/Inc/main.h:
 D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h:
+../Core/Inc/display.h:
+../Core/Inc/main.h:

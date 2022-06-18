@@ -77,6 +77,8 @@ extern volatile FunctionalState USB_CDC_End_Line_Received;
 
 extern uint8_t command_buffer[31];
 
+uint8_t eta_hours,eta_minute,eta_second;
+
 int16_t Enc_Counter = 0;
 
 CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
@@ -84,8 +86,6 @@ CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
 uint32_t DAC_tx_buffer;
 uint16_t DAC_tx_tmp_buffer[2];
 DAC_CONFIG1 cfg;
-
-uint8_t eta_hours,eta_minute,eta_second;
 
 uint8_t CPLD_WORD=0x5;
 float DDS_FTW=0;
@@ -98,6 +98,7 @@ float DAC_fullrange_voltage;
 float cal_DAC_up_voltage;
 float cal_DAC_down_voltage;
 
+uint8_t Current_output_status;
 
 uint32_t DAC_code=0x0;
 FunctionalState DAC_code_direction;
@@ -139,9 +140,9 @@ int main(void)
 	cfg.TNH_MASK=0x00; // This bit is writable only when FSET = 0
 	cfg.EN_TMP_CAL=0; // Temperature calibration feature enabled
 
-	DAC_target_speed=0.9; //  V/s
+	DAC_target_speed=0.01; //  V/s
 	DAC_code=DAC_CODE_MIDDLE;
-	DAC_code_direction=0;
+	DAC_code_direction=1;
 
   /* USER CODE END 1 */
 
@@ -175,10 +176,14 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_Delay(750); //WarmUP
+  init_LCD();
+  display_screen(Hello_SCREEN);
+  LcdUpdate();
+  LcdClear_massive();
+  HAL_Delay(5000); //WarmUP
+
   load_data_from_EEPROM();
   TMP117_Initialization(hi2c1);
-  init_LCD();
   DDS_Init();
   DAC_SendInit();
   DAC_Write(DAC_code);
@@ -188,10 +193,8 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
 
 
-  Relay_control(1,0); // x1 mode
-  Relay_control(2,0); // x2/x4 mode
-  Relay_control(3,0); // Output Enable
-  CPLD_control(CPLD_WORD);
+  output_state(Output_off_STATE);
+  CPLD_control(0x00);
 
   send_answer_to_CDC(CLEAR_TYPE_1);
 
@@ -201,19 +204,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		if(cfg.LDACMODE==1){
-			sprintf(lcd_buf,"ARM      %01u:%02u:%02u",eta_hours,eta_minute,eta_second);
-			LcdString(1, 2);
-			LcdBarLine(DAC_code);
-		}
-		else
-		{
-				sprintf(lcd_buf,"STANDBY");
-				LcdString(1, 2);
-		}
-		LcdUpdate();
-		LcdClear_massive();
-
 		if(USB_CDC_End_Line_Received)
 		{
 			uint8_t i=0;
@@ -239,7 +229,10 @@ int main(void)
 		}
 		if(Need_update_Display)
 		{
-
+			display_screen(dU_dt_SCREEN);
+			LcdUpdate();
+			LcdClear_massive();
+			Need_update_Display=0;
 		}
 
     /* USER CODE END WHILE */
@@ -375,11 +368,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void Parsing_USB_command(void)
 {
-	float atof_tmp;
 	char *found;
 	char decoded_string_1[31];
 	char decoded_string_2[31];
-	float dac_resolution;
 
 	found = strtok((char *)command_buffer," ");
 	if(found!=NULL)
@@ -406,14 +397,16 @@ void Parsing_USB_command(void)
 	// ==== SWEEP command ====
 	if(!(strcmp(decoded_string_1,"SWEEP")))
 	{
-		if(!(strcmp(decoded_string_2,"START"))){
+		if(!(strcmp(decoded_string_2,"START")))
+		{
 			cmd_SWEEP_START();
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
 		}
 		else
 		{
-			if(!(strcmp(decoded_string_2,"STOP"))){
+			if(!(strcmp(decoded_string_2,"STOP")))
+			{
 				cmd_SWEEP_STOP();
 				send_answer_to_CDC(OK_TYPE_2);
 				return;
@@ -443,12 +436,8 @@ void Parsing_USB_command(void)
 			}
 			else
 			{
-				atof_tmp=atof(decoded_string_2);
-				if(atof_tmp>=cal_DAC_down_voltage && atof_tmp<=cal_DAC_up_voltage)
+				if(cmd_SET_OUTPUT_VOLTAGE(atof(decoded_string_2)))
 				{
-					dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
-					DAC_code=(uint32_t)((atof_tmp-cal_DAC_down_voltage)/dac_resolution);
-					cmd_DAC_SET(DAC_code);
 					send_answer_to_CDC(OK_TYPE_2);
 					return;
 				}
@@ -537,17 +526,14 @@ void Parsing_USB_command(void)
 	// ==== SWEEP_RATE command ====
 	if(!(strcmp(decoded_string_1,"SWEEP_RATE")))
 	{
-		atof_tmp=atof(decoded_string_2);
-		if(atof_tmp<0.001 || atof_tmp>1)
+		if(cmd_SWEEP_RATE(atof(decoded_string_2)))
 		{
-			send_answer_to_CDC(ERROR_TYPE_1);
+			send_answer_to_CDC(OK_TYPE_2);
 			return;
 		}
 		else
 		{
-			DAC_target_speed=atof_tmp;
-
-			send_answer_to_CDC(OK_TYPE_2);
+			send_answer_to_CDC(ERROR_TYPE_1);
 			return;
 		}
 	}

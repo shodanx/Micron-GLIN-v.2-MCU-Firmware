@@ -177,7 +177,6 @@ void DAC_TEMP_CAL(void)
 
 	cfg.EN_TMP_CAL=1;
 	DAC_SendInit();
-	//HAL_Delay(10);
 
 	DAC_tx_buffer=0x04000100; // Write TRIGGER RCLTMP
 
@@ -192,8 +191,6 @@ void DAC_TEMP_CAL(void)
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,2,2);
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_SET);
-
-	//HAL_Delay(500); // Wait some time....
 
 	do{ // Check complete flag
 		HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
@@ -331,7 +328,6 @@ void DDS_Update(void)
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-//	HAL_Delay(1);
 
 	// Write to Frequency 0 Reg, L MSBs
 	DDS_tx_buffer[0]=0x2200;
@@ -340,7 +336,6 @@ void DDS_Update(void)
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-//	HAL_Delay(1);
 
 	// Write to Frequency 0 Reg, H LSBs
 	DDS_tx_buffer[0]=0x3100;
@@ -349,7 +344,6 @@ void DDS_Update(void)
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-//	HAL_Delay(1);
 
 	// Write to Frequency 0 Reg, L LSBs
 	DDS_tx_buffer[0]=0x2000;
@@ -358,7 +352,6 @@ void DDS_Update(void)
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-	//HAL_Delay(1);
 
 /*	// Control DDS (D15=1, D14=1)
 	DDS_tx_buffer[0]=0x9000; // Latch to output by synchonizing data. In this case, the SELSRC bit is again set to 1 using Command Bits [1:0] for C15 and C14.
@@ -366,7 +359,6 @@ void DDS_Update(void)
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-	HAL_Delay(1);
 */
 }
 

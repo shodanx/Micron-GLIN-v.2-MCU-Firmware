@@ -2,6 +2,7 @@
 #include "function.h"
 #include "usb_device.h"
 #include "circular_buffer.h"
+#include "display.h"
 
 extern void DDS_Update(void);
 extern void DDS_Calculation(void);
@@ -24,6 +25,12 @@ extern float corr_coeff_1;
 extern float corr_coeff_2;
 extern float corr_coeff_3;
 
+extern uint8_t Current_output_status;
+
+extern uint32_t DAC_code;
+extern float DAC_target_speed;
+
+extern uint8_t eta_hours,eta_minute,eta_second;
 
 
 volatile FunctionalState USB_CDC_End_Line_Received;
@@ -56,10 +63,92 @@ uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 uint8_t OK_Enter[]="\r\n OK \n\rEnter command: ";
 uint8_t Error2[]="\r\n Value out of range \n\r\n\rEnter command: ";
 uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
+//==============================================================================================
 
 
+//==============================================================================================
+void output_state(uint8_t type)
+{
+	switch(type)
+	{
+	//----------------------------------------------------------//
+	case Output_off_STATE:
+	  Relay_control(1,0); // x1 mode
+	  Relay_control(2,0); // x2/x4 mode
+	  Relay_control(3,0); // Output Enable
+	  Current_output_status=Output_off_STATE;
+	  break;
+
+	case Output_x1_STATE:
+	  Relay_control(1,0); // x1 mode
+	  Relay_control(2,0); // x2/x4 mode
+	  Relay_control(3,1); // Output Enable
+	  Current_output_status=Output_x1_STATE;
+	  break;
+
+	case Output_x2_STATE:
+	  Relay_control(1,1); // x1 mode
+	  Relay_control(2,1); // x2/x4 mode
+	  Relay_control(3,1); // Output Enable
+	  Current_output_status=Output_x2_STATE;
+	  break;
+
+	case Output_x4_STATE:
+	  Relay_control(1,1); // x1 mode
+	  Relay_control(2,0); // x2/x4 mode
+	  Relay_control(3,1); // Output Enable
+	  Current_output_status=Output_x4_STATE;
+	  break;
+	}
+}
+//==============================================================================================
 
 
+//==============================================================================================
+void display_screen(uint8_t type)
+{
+	char sign;
+	switch(type)
+	{
+	//----------------------------------------------------------//
+	case dU_dt_SCREEN:
+		if(DAC_code_direction==1)
+		{
+			sign='+';
+		}
+		else
+		{
+			sign='-';
+		}
+		sprintf(lcd_buf,"' %c%1.4EV/s",sign, DAC_target_speed);
+		LcdString(1, 1);
+
+		if(cfg.LDACMODE==1){
+			sprintf(lcd_buf,"ARM      %01u:%02u:%02u",eta_hours,eta_minute,eta_second);
+			LcdString(1, 2);
+			LcdBarLine(DAC_code);
+		}
+		else
+		{
+				sprintf(lcd_buf,"STANDBY");
+				LcdString(1, 2);
+		}
+		break;
+		//----------------------------------------------------------//
+		case Hello_SCREEN:
+			sprintf(lcd_buf,"Hello AmpNuts!");
+			LcdString(1, 1);
+			sprintf(lcd_buf,"I`m Micron-GLIN");
+			LcdString(1, 2);
+			break;
+	}
+
+
+}
+//==============================================================================================
+
+
+//==============================================================================================
 void send_answer_to_CDC(uint8_t type)
 {
 	uint8_t cdc_counter=0;
@@ -89,21 +178,29 @@ void send_answer_to_CDC(uint8_t type)
 		break;
 	}
 }
+//==============================================================================================
+
+
+//==============================================================================================
 void cmd_SWEEP_START()
 {
 	DAC_TEMP_CAL();
 	CPLD_control(CPLD_WORD); // Enable LDAC signal
 	DAC_SendInit();
 }
+//==============================================================================================
 
-/////////////////////////////////////////////////////////
+
+//==============================================================================================
 void cmd_SWEEP_STOP()
 {
 	CPLD_control(0x0); // Disable LDAC signal
 	DAC_SendInit();
 }
+//==============================================================================================
 
-/////////////////////////////////////////////////////////
+
+//==============================================================================================
 void cmd_DAC_SET(uint32_t code)
 {
 	if (code>0xFFFFF)return;
@@ -123,9 +220,44 @@ void cmd_DAC_SET(uint32_t code)
 	DAC_TEMP_CAL();
 	DAC_Write(code);
 }
+//==============================================================================================
 
 
-/////////////////////////////////////////////////////////
+//==============================================================================================
+FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
+{
+	float dac_resolution;
+
+	if(volt>=cal_DAC_down_voltage && volt<=cal_DAC_up_voltage)
+	{
+		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
+		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage)/dac_resolution);
+		cmd_DAC_SET(DAC_code);
+		send_answer_to_CDC(OK_TYPE_2);
+		return 1;
+	}
+	return 0;
+}
+//==============================================================================================
+
+
+//==============================================================================================
+FunctionalState cmd_SWEEP_RATE(float rate)
+{
+		if(rate<0.0009 || rate>1.1) // V/s
+		{
+			return 0;
+		}
+		else
+		{
+			DAC_target_speed=rate;
+			return 1;
+		}
+}
+//==============================================================================================
+
+
+//==============================================================================================
 FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 {
 	float tmpx;
@@ -170,7 +302,10 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 	return 1;
 
 }
-/////////////////////////////////////////////////////////
+//==============================================================================================
+
+
+//==============================================================================================
 void load_data_from_EEPROM(void)
 {
 	cal_DAC_up_voltage=binary_to_float(EEPROM_read(cal_DAC_up_voltage_EEPROM_ADDRESS)); // Read top voltage calibration from EEPROM in uV value
@@ -181,8 +316,7 @@ void load_data_from_EEPROM(void)
 	corr_coeff_2=binary_to_float(EEPROM_read(corr_coeff_2_EEPROM_ADDRESS));
 	corr_coeff_3=binary_to_float(EEPROM_read(corr_coeff_3_EEPROM_ADDRESS));
 }
-/////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////
+//==============================================================================================
 
 
 //==============================================================================================
@@ -236,6 +370,9 @@ uint32_t EEPROM_read(uint32_t address_of_read)
 	return *(__IO uint32_t *) Address;
 }
 //==============================================================================================
+
+
+//==============================================================================================
 void EEPROM_write(uint32_t address_of_read, uint32_t data)
 {
 	uint32_t Address;
@@ -268,3 +405,4 @@ void EEPROM_write(uint32_t address_of_read, uint32_t data)
 	}
 
 }
+//==============================================================================================

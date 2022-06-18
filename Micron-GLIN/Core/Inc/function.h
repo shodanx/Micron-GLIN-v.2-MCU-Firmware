@@ -29,6 +29,16 @@
 #define NONE			12
 #define RUN_CAL_TYPE_TEMP 13
 
+
+#define dU_dt_SCREEN		0
+#define Hello_SCREEN		1
+
+#define Output_off_STATE	0
+#define Output_x1_STATE		1
+#define Output_x2_STATE		2
+#define Output_x4_STATE		3
+
+
 #define DAC_CODE_TOP	0xFFFFF
 #define DAC_CODE_DOWN	0x0
 #define DAC_CODE_MIDDLE	0x7FFFF
@@ -47,8 +57,14 @@ void send_answer_to_CDC(uint8_t);
 void cmd_SWEEP_START();
 void cmd_SWEEP_STOP();
 void cmd_DAC_SET(uint32_t);
+FunctionalState cmd_SET_OUTPUT_VOLTAGE(float);
+FunctionalState cmd_SWEEP_RATE(float);
 
 FunctionalState cmd_CAL(uint8_t, float);
+
+void display_screen(uint8_t);
+void output_state(uint8_t);
+
 
 uint32_t float_to_binary(float);
 float binary_to_float(uint32_t);
