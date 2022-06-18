@@ -1,4 +1,7 @@
+#include <math.h>
+
 #include "dac_and_dds_func.h"
+#include "function.h"
 
 extern float DDS_clock_frequecny;
 extern float DAC_fullrange_voltage;
@@ -9,6 +12,10 @@ extern uint8_t CPLD_WORD;
 float corr_coeff_1;
 float corr_coeff_2;
 float corr_coeff_3;
+float gain_x2_coeff;
+float gain_x4_coeff;
+
+void load_data_from_EEPROM(void);
 
 extern uint8_t eta_hours,eta_minute,eta_second;
 extern FunctionalState DAC_code_direction;
@@ -205,20 +212,39 @@ void DAC_TEMP_CAL(void)
 	}while(ALM!=1);
 }
 
-void DDS_Calculation(void)
+void DDS_Calculation(FunctionalState update)
 {
-	float hw_limit=1000; // 1(256)kHz hardware optimized limit
-	float dac_counts=1048576;
+	float hw_limit=1000; // 1kHz hardware optimized limit
+	float dac_counts=DAC_CODE_TOP-1;
 	float corr_coeff;
 	float dac_tmp=DAC_code;
 	float second_left;
 	uint32_t codes_left;
 
+	// Linearity correction
 	corr_coeff=corr_coeff_1*dac_tmp*dac_tmp;
 	corr_coeff+=corr_coeff_2*dac_tmp;
 	corr_coeff+=corr_coeff_3;
 
-	DDS_target_frequecny=dac_counts/(DAC_fullrange_voltage/DAC_target_speed);
+	DDS_target_frequecny=dac_counts/(DAC_fullrange_voltage/DAC_target_speed); // 1048575 / (14V / 0.01V/s) = 74.898214 Hz
+
+	if(update==NEED_UPDATE_CPLD_STATE)
+	{
+		// Calculate CPLD divider to expand DDS FTW to 0.1 ppm
+		float dds_tmp_calc=DDS_clock_frequecny;
+		dds_tmp_calc/=(float)0xFFFFFFFF; // 10MHz / 2^32 = 0.0023283 Hz DDS FTW resolution
+		dds_tmp_calc=dds_tmp_calc/(DDS_target_frequecny/(float)1E7); // 0.0023283 Hz / (74.898214 Hz / 1E7) = 310.86 minimum CPLD divider
+
+		for(int i=1; i<0x0F; i++) // find CPLD tuning word
+		{
+			if(((1<<i)+1) > dds_tmp_calc)
+			{
+				CPLD_WORD=i;
+				if(cfg.LDACMODE==1)CPLD_control(CPLD_WORD); // Enable LDAC signal
+				break;
+			}
+		}
+	}
 
 	if(DDS_target_frequecny>hw_limit)
 	{
@@ -248,7 +274,7 @@ void DDS_Calculation(void)
 void DDS_Init(void)
 {
 	uint16_t DDS_tx_buffer[1];
-	DDS_Calculation();
+	DDS_Calculation(NEED_UPDATE_CPLD_STATE);
 
 	HAL_Delay(100);
 
@@ -319,8 +345,6 @@ void DDS_Init(void)
 void DDS_Update(void)
 {
 	uint16_t DDS_tx_buffer[1];
-
-	DDS_Calculation();
 
 	// Write to Frequency 0 Reg, H MSB
 	DDS_tx_buffer[0]=0x3300;

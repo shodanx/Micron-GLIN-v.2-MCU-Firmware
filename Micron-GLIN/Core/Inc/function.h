@@ -26,18 +26,23 @@
 #define DAC_CAL_POLY_C	9
 #define DAC_CAL_TOP		10
 #define DAC_CAL_DOWN	11
-#define NONE			12
-#define RUN_CAL_TYPE_TEMP 13
-
-
-#define dU_dt_SCREEN		0
-#define Hello_SCREEN		1
+#define GAIN_X2_CAL		12
+#define GAIN_X4_CAL		13
+#define NONE			14
+#define RUN_CAL_TYPE_TEMP 15
 
 #define Output_off_STATE	0
 #define Output_x1_STATE		1
 #define Output_x2_STATE		2
 #define Output_x4_STATE		3
 
+#define NO_UPDATE_STATE			0
+#define NEED_UPDATE_CPLD_STATE	1
+
+#define dU_dt_SCREEN		0
+#define Hello_SCREEN		1
+#define Warm_up_SCREEN		2
+#define Ready_SCREEN		3
 
 #define DAC_CODE_TOP	0xFFFFF
 #define DAC_CODE_DOWN	0x0
@@ -52,6 +57,8 @@
 #define corr_coeff_1_EEPROM_ADDRESS 		0x0010
 #define corr_coeff_2_EEPROM_ADDRESS 		0x0018
 #define corr_coeff_3_EEPROM_ADDRESS 		0x0020
+#define gain_x2_EEPROM_ADDRESS				0x0028
+#define gain_x4_EEPROM_ADDRESS				0x0030
 
 void send_answer_to_CDC(uint8_t);
 void cmd_SWEEP_START();

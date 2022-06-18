@@ -10,8 +10,7 @@
 
 void DDS_Init(void);
 void DDS_Update(void);
-void DDS_Calculation(void);
-//void DDS_prepare_to_tempcal(void);
+void DDS_Calculation(FunctionalState);
 void DAC_SendInit(void);
 void DAC_TEMP_CAL(void);
 void DAC_Write(uint32_t);

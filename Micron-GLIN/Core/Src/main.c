@@ -64,7 +64,7 @@ uint16_t tmpx;
 extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 extern void DDS_Init(void);
 extern void DDS_Update(void);
-extern void DDS_Calculation(void);
+extern void DDS_Calculation(FunctionalState);
 extern void DAC_SendInit(void);
 extern void DAC_TEMP_CAL(void);
 extern void DAC_Write(uint32_t);
@@ -177,10 +177,23 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   init_LCD();
+
+/*
   display_screen(Hello_SCREEN);
   LcdUpdate();
   LcdClear_massive();
   HAL_Delay(5000); //WarmUP
+
+  display_screen(Warm_up_SCREEN);
+  LcdUpdate();
+  LcdClear_massive();
+  HAL_Delay(12000); //WarmUP
+
+  display_screen(Ready_SCREEN);
+  LcdUpdate();
+  LcdClear_massive();
+  HAL_Delay(3000); //WarmUP
+*/
 
   load_data_from_EEPROM();
   TMP117_Initialization(hi2c1);
@@ -224,7 +237,7 @@ int main(void)
 				Need_update_DDS=0;
 				Ramp_dac_step_complete=0;
 			}
-			DDS_Calculation();
+			DDS_Calculation(NO_UPDATE_STATE);
 
 		}
 		if(Need_update_Display)
@@ -451,6 +464,46 @@ void Parsing_USB_command(void)
 		}
 	}
 
+
+	// ==== OUTPUT command ====
+	if(!(strcmp(decoded_string_1,"OUTPUT")))
+	{
+		if(!(strcmp(decoded_string_2,"OFF"))){
+			output_state(Output_off_STATE);
+			send_answer_to_CDC(OK_TYPE_2);
+			return;
+		}
+		else
+		{
+			if(!(strcmp(decoded_string_2,"X1"))){
+				output_state(Output_x1_STATE);
+				send_answer_to_CDC(OK_TYPE_2);
+				return;
+			}
+			else
+			{
+				if(!(strcmp(decoded_string_2,"X2"))){
+					output_state(Output_x2_STATE);
+					send_answer_to_CDC(OK_TYPE_2);
+					return;
+				}
+				else
+				{
+					if(!(strcmp(decoded_string_2,"X4"))){
+						output_state(Output_x4_STATE);
+						send_answer_to_CDC(OK_TYPE_2);
+						return;
+					}
+					else
+					{
+						send_answer_to_CDC(ERROR_TYPE_2);
+						return;
+					}
+				}
+			}
+		}
+	}
+
 	// ==== DAC_CAL_TEMP command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_TEMP")))
 	{
@@ -490,6 +543,37 @@ void Parsing_USB_command(void)
 		send_answer_to_CDC(OK_TYPE_2);
 		return;
 	}
+
+	// ==== GAIN_X2_CAL command ====
+	if(!(strcmp(decoded_string_1,"GAIN_X2_CAL")))
+	{
+		if(cmd_CAL(GAIN_X2_CAL,atof(decoded_string_2)))
+		{
+			send_answer_to_CDC(OK_TYPE_2);
+			return;
+		}
+		else
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+	}
+
+	// ==== GAIN_X4_CAL command ====
+	if(!(strcmp(decoded_string_1,"GAIN_X4_CAL")))
+	{
+		if(cmd_CAL(GAIN_X4_CAL,atof(decoded_string_2)))
+		{
+			send_answer_to_CDC(OK_TYPE_2);
+			return;
+		}
+		else
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+	}
+
 
 	// ==== DAC_CAL_TOP command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_TOP")))

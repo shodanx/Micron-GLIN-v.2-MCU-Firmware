@@ -5,7 +5,7 @@
 #include "display.h"
 
 extern void DDS_Update(void);
-extern void DDS_Calculation(void);
+extern void DDS_Calculation(FunctionalState);
 extern void DAC_SendInit(void);
 extern void DAC_TEMP_CAL(void);
 extern void DAC_Write(uint32_t);
@@ -24,6 +24,8 @@ extern float cal_DAC_down_voltage;
 extern float corr_coeff_1;
 extern float corr_coeff_2;
 extern float corr_coeff_3;
+extern float gain_x2_coeff;
+extern float gain_x4_coeff;
 
 extern uint8_t Current_output_status;
 
@@ -49,11 +51,15 @@ uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"SWEEP_RATE 1.0E-3        - set dv/dt speed (range 1...0.001)\n\r"
 		"SWEEP_DIRECTION UP/DOWN  - set dv/dt direction(increase or decrease)\n\r"
 		"DAC_SET TOP/DOWN/3E.4567 - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
+		"OUTPUT OFF/X1/X2/X4      - set output mode\n\r"
 
 		"\n\r"
 		"DAC_CAL_TOP 10.01234     - set maximum positive DAC voltage\n\r"
 		"DAC_CAL_DOWN -9.99876    - set maximum negative DAC voltage\n\r"
 		"DAC_CAL_TEMP START       - start DAC temperature calibration cycle\n\r"
+		"\n\r"
+		"GAIN_X2_CAL 2.001234     - set LT5400 x2 gain\n\r"
+		"GAIN_X4_CAL 4.001234     - set LT5400 x4 gain\n\r"
 		"\n\r"
 		"DAC_CAL_POLY_A 1.266415E-16 - set Linearity correction\n\r" //1.266415E-16x2 - 1.845382E-10x + 1.000056E+00
 		"DAC_CAL_POLY_B 1.845382E-10 - set Linearity correction\n\r"
@@ -84,6 +90,7 @@ void output_state(uint8_t type)
 	  Relay_control(2,0); // x2/x4 mode
 	  Relay_control(3,1); // Output Enable
 	  Current_output_status=Output_x1_STATE;
+	  DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 	  break;
 
 	case Output_x2_STATE:
@@ -91,6 +98,7 @@ void output_state(uint8_t type)
 	  Relay_control(2,1); // x2/x4 mode
 	  Relay_control(3,1); // Output Enable
 	  Current_output_status=Output_x2_STATE;
+	  DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff;
 	  break;
 
 	case Output_x4_STATE:
@@ -98,6 +106,7 @@ void output_state(uint8_t type)
 	  Relay_control(2,0); // x2/x4 mode
 	  Relay_control(3,1); // Output Enable
 	  Current_output_status=Output_x4_STATE;
+	  DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff;
 	  break;
 	}
 }
@@ -130,20 +139,40 @@ void display_screen(uint8_t type)
 		}
 		else
 		{
-				sprintf(lcd_buf,"STANDBY");
+			if(Current_output_status==Output_off_STATE)
+			{
+				sprintf(lcd_buf,"OUTPUT DISABLED");
 				LcdString(1, 2);
+			}
+			else
+			{
+				sprintf(lcd_buf,"READY TO FIGHT");
+				LcdString(1, 2);
+			}
 		}
 		break;
-		//----------------------------------------------------------//
-		case Hello_SCREEN:
-			sprintf(lcd_buf,"Hello AmpNuts!");
-			LcdString(1, 1);
-			sprintf(lcd_buf,"I`m Micron-GLIN");
-			LcdString(1, 2);
-			break;
+	//----------------------------------------------------------//
+	case Hello_SCREEN:
+		sprintf(lcd_buf,"Hello AmpNuts!");
+		LcdString(1, 1);
+		sprintf(lcd_buf,"I`m Micron-GLIN");
+		LcdString(1, 2);
+		break;
+	//----------------------------------------------------------//
+	case Warm_up_SCREEN:
+		sprintf(lcd_buf,"need time to");
+		LcdString(1, 1);
+		sprintf(lcd_buf,"warm-up my refs");
+		LcdString(1, 2);
+		break;
+	//----------------------------------------------------------//
+	case Ready_SCREEN:
+		sprintf(lcd_buf,"Let Mortal Kombat");
+		LcdString(1, 1);
+		sprintf(lcd_buf,"    begin !!!");
+		LcdString(1, 2);
+		break;
 	}
-
-
 }
 //==============================================================================================
 
@@ -184,6 +213,7 @@ void send_answer_to_CDC(uint8_t type)
 //==============================================================================================
 void cmd_SWEEP_START()
 {
+	DDS_Calculation(NEED_UPDATE_CPLD_STATE);
 	DAC_TEMP_CAL();
 	CPLD_control(CPLD_WORD); // Enable LDAC signal
 	DAC_SendInit();
@@ -230,12 +260,29 @@ FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 
 	if(volt>=cal_DAC_down_voltage && volt<=cal_DAC_up_voltage)
 	{
+		if(Current_output_status!=Output_x1_STATE)output_state(Output_x1_STATE);
 		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
 		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage)/dac_resolution);
 		cmd_DAC_SET(DAC_code);
-		send_answer_to_CDC(OK_TYPE_2);
 		return 1;
 	}
+	if(volt>=(cal_DAC_down_voltage*gain_x2_coeff) && volt<=(cal_DAC_up_voltage*gain_x2_coeff))
+	{
+		if(Current_output_status!=Output_x2_STATE)output_state(Output_x2_STATE);
+		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff/0xFFFFF; // Calculate 1 LSB resolution
+		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage*gain_x2_coeff)/dac_resolution);
+		cmd_DAC_SET(DAC_code);
+		return 1;
+	}
+	if(volt>=(cal_DAC_down_voltage*gain_x4_coeff) && volt<=(cal_DAC_up_voltage*gain_x4_coeff))
+	{
+		if(Current_output_status!=Output_x4_STATE)output_state(Output_x4_STATE);
+		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff/0xFFFFF; // Calculate 1 LSB resolution
+		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage*gain_x4_coeff)/dac_resolution);
+		cmd_DAC_SET(DAC_code);
+		return 1;
+	}
+
 	return 0;
 }
 //==============================================================================================
@@ -251,6 +298,7 @@ FunctionalState cmd_SWEEP_RATE(float rate)
 		else
 		{
 			DAC_target_speed=rate;
+			DDS_Calculation(NEED_UPDATE_CPLD_STATE);
 			return 1;
 		}
 }
@@ -271,6 +319,7 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 		DAC_TEMP_CAL();
 		DAC_Write(DAC_CODE_MIDDLE);
 		break;
+
 	case DAC_CAL_POLY_A:
 		EEPROM_write(corr_coeff_1_EEPROM_ADDRESS,float_to_binary(tmpx));
 		break;
@@ -280,27 +329,39 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 	case DAC_CAL_POLY_C:
 		EEPROM_write(corr_coeff_3_EEPROM_ADDRESS,float_to_binary(tmpx));
 		break;
+
+	case GAIN_X2_CAL:
+		if((tmpx<2.1 && tmpx>1.9))
+		{
+			EEPROM_write(gain_x2_EEPROM_ADDRESS,float_to_binary(tmpx));
+		}
+		else return 0;
+		break;
+	case GAIN_X4_CAL:
+		if((tmpx<4.1 && tmpx>3.9))
+		{
+			EEPROM_write(gain_x4_EEPROM_ADDRESS,float_to_binary(tmpx));
+		}
+		else return 0;
+		break;
 	case DAC_CAL_TOP:
 		if((tmpx<10.1 && tmpx>9.9) || (tmpx>6.8 && tmpx<7.1))
 		{
-			cal_DAC_up_voltage=tmpx;
 			EEPROM_write(cal_DAC_up_voltage_EEPROM_ADDRESS,float_to_binary(tmpx)); // Write top voltage calibration to EEPROM in uV value
-			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 		}
 		else return 0;
 		break;
 	case DAC_CAL_DOWN:
 		if((tmpx>-10.1 && tmpx<-9.9) || (tmpx<-6.8 && tmpx>-7.1))
 		{
-			cal_DAC_down_voltage=tmpx;
 			EEPROM_write(cal_DAC_down_voltage_EEPROM_ADDRESS,float_to_binary(tmpx)); // Write top voltage calibration to EEPROM in uV value
-			DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 		}
 		else return 0;
 		break;
 	}
-	return 1;
 
+	load_data_from_EEPROM();
+	return 1;
 }
 //==============================================================================================
 
@@ -315,6 +376,8 @@ void load_data_from_EEPROM(void)
 	corr_coeff_1=binary_to_float(EEPROM_read(corr_coeff_1_EEPROM_ADDRESS));
 	corr_coeff_2=binary_to_float(EEPROM_read(corr_coeff_2_EEPROM_ADDRESS));
 	corr_coeff_3=binary_to_float(EEPROM_read(corr_coeff_3_EEPROM_ADDRESS));
+	gain_x2_coeff=binary_to_float(EEPROM_read(gain_x2_EEPROM_ADDRESS));
+	gain_x4_coeff=binary_to_float(EEPROM_read(gain_x4_EEPROM_ADDRESS));
 }
 //==============================================================================================
 
