@@ -178,7 +178,7 @@ int main(void)
 
   init_LCD();
 
-/*
+
   display_screen(Hello_SCREEN);
   LcdUpdate();
   LcdClear_massive();
@@ -193,7 +193,7 @@ int main(void)
   LcdUpdate();
   LcdClear_massive();
   HAL_Delay(3000); //WarmUP
-*/
+
 
   load_data_from_EEPROM();
   TMP117_Initialization(hi2c1);

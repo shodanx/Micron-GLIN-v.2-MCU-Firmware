@@ -32,22 +32,24 @@ extern float DDS_FTW;
 //==============================================================================================
 void Relay_control(uint8_t relay,uint8_t state){
 	int Relay_address=0;
-	if(relay<1 || relay>3 || state>1) return;
+	if(relay>3 || state>1) return;
 
-	while(Relay_address<=0x5) // Set all OUTx to zero
+	if(relay==0x00 && state==0x00)
 	{
-		HAL_GPIO_WritePin(Control_bus_1_GPIO_Port, Control_bus_1_Pin,  Relay_address & 0x1     );
-		HAL_GPIO_WritePin(Control_bus_2_GPIO_Port, Control_bus_2_Pin, (Relay_address & 0x2) >>1);
-		HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (Relay_address & 0x4) >>2);
+		while(Relay_address<=0x5) // Set all OUTx to zero
+		{
+			HAL_GPIO_WritePin(Control_bus_1_GPIO_Port, Control_bus_1_Pin,  Relay_address & 0x1     );
+			HAL_GPIO_WritePin(Control_bus_2_GPIO_Port, Control_bus_2_Pin, (Relay_address & 0x2) >>1);
+			HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (Relay_address & 0x4) >>2);
 
-		HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 0); // LVL 0
-
-		HAL_Delay(1); // wait 1ms
-		HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
-		HAL_Delay(1); // wait 1ms
-		HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1);
-		HAL_Delay(1); // wait 1ms
-		Relay_address++;
+			HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 0); // LVL 0
+			HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
+			HAL_Delay(1); // wait 1ms
+			HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1);
+			HAL_Delay(1); // wait 1ms
+			Relay_address++;
+		}
+		return;
 	}
 
 
@@ -78,21 +80,9 @@ void Relay_control(uint8_t relay,uint8_t state){
 	HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (Relay_address & 0x4) >>2);
 
 	HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 1); // LVL 1
-
-	HAL_Delay(1); // wait 1ms
 	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
 	HAL_Delay(1); // wait 1ms
 	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1); // End strobe
-	HAL_Delay(50); // wait 50ms
-
-	HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin, 0); // LVL 0
-
-	HAL_Delay(1); // wait 1ms
-	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 0); // Send strobe
-	HAL_Delay(1); // wait 1ms
-	HAL_GPIO_WritePin(Relay_cs_GPIO_Port, Relay_cs_Pin, 1); // End strobe
-	HAL_Delay(1); // wait 1ms
-
 }
 
 //==============================================================================================

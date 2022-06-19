@@ -75,40 +75,68 @@ uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
 //==============================================================================================
 void output_state(uint8_t type)
 {
+	int relay_settling_time_ms=50;
 	switch(type)
 	{
 	//----------------------------------------------------------//
 	case Output_off_STATE:
+	  Relay_control(0,0); // set all coils off
 	  Relay_control(1,0); // x1 mode
 	  Relay_control(2,0); // x2/x4 mode
 	  Relay_control(3,0); // Output Enable
+	  HAL_Delay(relay_settling_time_ms); // wait
+	  Relay_control(0,0); // set all coils off
 	  Current_output_status=Output_off_STATE;
 	  break;
 
 	case Output_x1_STATE:
+	  Relay_control(0,0); // set all coils off
 	  Relay_control(1,0); // x1 mode
 	  Relay_control(2,0); // x2/x4 mode
 	  Relay_control(3,1); // Output Enable
+	  HAL_Delay(relay_settling_time_ms); // wait
+	  Relay_control(0,0); // set all coils off
 	  Current_output_status=Output_x1_STATE;
 	  DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 	  break;
 
 	case Output_x2_STATE:
+	  Relay_control(0,0); // set all coils off
 	  Relay_control(1,1); // x1 mode
 	  Relay_control(2,1); // x2/x4 mode
 	  Relay_control(3,1); // Output Enable
+	  HAL_Delay(relay_settling_time_ms); // wait
+	  Relay_control(0,0); // set all coils off
 	  Current_output_status=Output_x2_STATE;
 	  DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff;
 	  break;
 
 	case Output_x4_STATE:
+	  Relay_control(0,0); // set all coils off
 	  Relay_control(1,1); // x1 mode
 	  Relay_control(2,0); // x2/x4 mode
 	  Relay_control(3,1); // Output Enable
+	  HAL_Delay(relay_settling_time_ms); // wait
+	  Relay_control(0,0); // set all coils off
 	  Current_output_status=Output_x4_STATE;
 	  DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff;
 	  break;
-	}
+
+	case Output_auto_STATE:
+		if((cal_DAC_up_voltage-cal_DAC_down_voltage)/DAC_target_speed > 600)
+		{
+			output_state(Output_x1_STATE);
+		}
+		else
+			if (((cal_DAC_up_voltage-cal_DAC_down_voltage)*2)/DAC_target_speed > 600)
+			{
+				output_state(Output_x2_STATE);
+			}
+			else
+				output_state(Output_x4_STATE);
+
+		break;
+}
 }
 //==============================================================================================
 
@@ -146,7 +174,7 @@ void display_screen(uint8_t type)
 			}
 			else
 			{
-				sprintf(lcd_buf,"READY TO FIGHT");
+				sprintf(lcd_buf,"READY TO GO");
 				LcdString(1, 2);
 			}
 		}
@@ -167,9 +195,9 @@ void display_screen(uint8_t type)
 		break;
 	//----------------------------------------------------------//
 	case Ready_SCREEN:
-		sprintf(lcd_buf,"Let Mortal Kombat");
+		sprintf(lcd_buf,"I`m ready...");
 		LcdString(1, 1);
-		sprintf(lcd_buf,"    begin !!!");
+		sprintf(lcd_buf,"      Let`s start!");
 		LcdString(1, 2);
 		break;
 	}
@@ -213,6 +241,7 @@ void send_answer_to_CDC(uint8_t type)
 //==============================================================================================
 void cmd_SWEEP_START()
 {
+	output_state(Output_auto_STATE);
 	DDS_Calculation();
 	DAC_TEMP_CAL();
 	CPLD_control(CPLD_ON_STATE); // Enable LDAC signal
