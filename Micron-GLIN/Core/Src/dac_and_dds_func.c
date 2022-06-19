@@ -100,17 +100,32 @@ void Relay_control(uint8_t relay,uint8_t state){
 
 
 //==============================================================================================
-void CPLD_control(uint8_t divide_coeff){
-	if(divide_coeff>0x0F) return;
+void CPLD_control(FunctionalState state){
+	uint8_t send_word=0x00;
 
-	HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin,  divide_coeff & 0x1     );
-	HAL_GPIO_WritePin(Control_bus_1_GPIO_Port, Control_bus_1_Pin, (divide_coeff & 0x2) >>1);
-	HAL_GPIO_WritePin(Control_bus_2_GPIO_Port, Control_bus_2_Pin, (divide_coeff & 0x4) >>2);
-	HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (divide_coeff & 0x8) >>3);
+	// Calculate CPLD divider to expand DDS FTW to 0.1 ppm
+	float dds_tmp_calc=DDS_clock_frequecny;
+	dds_tmp_calc/=(float)0xFFFFFFFF; // 10MHz / 2^32 = 0.0023283 Hz DDS FTW resolution
+	dds_tmp_calc=dds_tmp_calc/(DDS_target_frequecny/(float)1E7); // 0.0023283 Hz / (74.898214 Hz / 1E7) = 310.86 minimum CPLD divider
+
+	for(int i=1; i<0x0F; i++) // find CPLD tuning word
+	{
+		if(((1<<i)+1) > dds_tmp_calc)
+		{
+			CPLD_WORD=i;
+			break;
+		}
+	}
+
+	if(state==CPLD_ON_STATE)send_word=CPLD_WORD;
+	HAL_GPIO_WritePin(Control_bus_0_GPIO_Port, Control_bus_0_Pin,  send_word & 0x1     );
+	HAL_GPIO_WritePin(Control_bus_1_GPIO_Port, Control_bus_1_Pin, (send_word & 0x2) >>1);
+	HAL_GPIO_WritePin(Control_bus_2_GPIO_Port, Control_bus_2_Pin, (send_word & 0x4) >>2);
+	HAL_GPIO_WritePin(Control_bus_3_GPIO_Port, Control_bus_3_Pin, (send_word & 0x8) >>3);
 	HAL_GPIO_WritePin(Count_EN_GPIO_Port, Count_EN_Pin, GPIO_PIN_SET); // Send strobe
 	HAL_GPIO_WritePin(Count_EN_GPIO_Port, Count_EN_Pin, GPIO_PIN_RESET);
 
-	if(divide_coeff==0x00)
+	if(state==CPLD_OFF_STATE)
 	{
 		cfg.LDACMODE=0;
 	}
@@ -119,7 +134,6 @@ void CPLD_control(uint8_t divide_coeff){
 		cfg.LDACMODE=1;
 	}
 }
-
 //==============================================================================================
 
 
@@ -180,7 +194,7 @@ void DAC_TEMP_CAL(void)
 
 	uint16_t spi_receive[2]={0x0,0x0},DAC_tx_tmp_buffer2[2],ALM=0;
 
-	//CPLD_control(0x0); // Disable LDAC signal
+	//CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 
 	cfg.EN_TMP_CAL=1;
 	DAC_SendInit();
@@ -212,7 +226,7 @@ void DAC_TEMP_CAL(void)
 	}while(ALM!=1);
 }
 
-void DDS_Calculation(FunctionalState update)
+void DDS_Calculation(void)
 {
 	float hw_limit=1000; // 1kHz hardware optimized limit
 	float dac_counts=DAC_CODE_TOP-1;
@@ -227,24 +241,6 @@ void DDS_Calculation(FunctionalState update)
 	corr_coeff+=corr_coeff_3;
 
 	DDS_target_frequecny=dac_counts/(DAC_fullrange_voltage/DAC_target_speed); // 1048575 / (14V / 0.01V/s) = 74.898214 Hz
-
-	if(update==NEED_UPDATE_CPLD_STATE)
-	{
-		// Calculate CPLD divider to expand DDS FTW to 0.1 ppm
-		float dds_tmp_calc=DDS_clock_frequecny;
-		dds_tmp_calc/=(float)0xFFFFFFFF; // 10MHz / 2^32 = 0.0023283 Hz DDS FTW resolution
-		dds_tmp_calc=dds_tmp_calc/(DDS_target_frequecny/(float)1E7); // 0.0023283 Hz / (74.898214 Hz / 1E7) = 310.86 minimum CPLD divider
-
-		for(int i=1; i<0x0F; i++) // find CPLD tuning word
-		{
-			if(((1<<i)+1) > dds_tmp_calc)
-			{
-				CPLD_WORD=i;
-				if(cfg.LDACMODE==1)CPLD_control(CPLD_WORD); // Enable LDAC signal
-				break;
-			}
-		}
-	}
 
 	if(DDS_target_frequecny>hw_limit)
 	{
@@ -274,7 +270,7 @@ void DDS_Calculation(FunctionalState update)
 void DDS_Init(void)
 {
 	uint16_t DDS_tx_buffer[1];
-	DDS_Calculation(NEED_UPDATE_CPLD_STATE);
+	DDS_Calculation();
 
 	HAL_Delay(100);
 

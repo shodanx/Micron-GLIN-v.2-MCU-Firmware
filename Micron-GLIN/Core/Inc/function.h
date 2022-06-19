@@ -36,8 +36,9 @@
 #define Output_x2_STATE		2
 #define Output_x4_STATE		3
 
-#define NO_UPDATE_STATE			0
-#define NEED_UPDATE_CPLD_STATE	1
+#define CPLD_OFF_STATE			0
+#define CPLD_ON_STATE			1
+#define CPLD_RT_UPDATE_STATE	2
 
 #define dU_dt_SCREEN		0
 #define Hello_SCREEN		1

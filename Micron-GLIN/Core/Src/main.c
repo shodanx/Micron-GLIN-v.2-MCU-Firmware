@@ -64,7 +64,7 @@ uint16_t tmpx;
 extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 extern void DDS_Init(void);
 extern void DDS_Update(void);
-extern void DDS_Calculation(FunctionalState);
+extern void DDS_Calculation();
 extern void DAC_SendInit(void);
 extern void DAC_TEMP_CAL(void);
 extern void DAC_Write(uint32_t);
@@ -87,7 +87,7 @@ uint32_t DAC_tx_buffer;
 uint16_t DAC_tx_tmp_buffer[2];
 DAC_CONFIG1 cfg;
 
-uint8_t CPLD_WORD=0x5;
+uint8_t CPLD_WORD;
 float DDS_FTW=0;
 float DDS_target_frequecny;
 float DAC_target_speed;
@@ -207,7 +207,7 @@ int main(void)
 
 
   output_state(Output_off_STATE);
-  CPLD_control(0x00);
+  CPLD_control(CPLD_OFF_STATE);
 
   send_answer_to_CDC(CLEAR_TYPE_1);
 
@@ -237,7 +237,7 @@ int main(void)
 				Need_update_DDS=0;
 				Ramp_dac_step_complete=0;
 			}
-			DDS_Calculation(NO_UPDATE_STATE);
+			DDS_Calculation();
 
 		}
 		if(Need_update_Display)
@@ -352,7 +352,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 
 			} else  {
-				CPLD_control(0x0); // Disable LDAC signal
+				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
 				send_answer_to_CDC(DONE_TYPE_1);
 				return;
@@ -370,7 +370,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 
 			} else {
-				CPLD_control(0x0); // Disable LDAC signal
+				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
 				send_answer_to_CDC(DONE_TYPE_1);
 				return;

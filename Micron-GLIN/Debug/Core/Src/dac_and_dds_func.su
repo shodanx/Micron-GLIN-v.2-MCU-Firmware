@@ -1,9 +1,9 @@
 ../Core/Src/dac_and_dds_func.c:33:6:Relay_control	24	static
-../Core/Src/dac_and_dds_func.c:103:6:CPLD_control	16	static
-../Core/Src/dac_and_dds_func.c:128:6:DAC_Write	16	static
-../Core/Src/dac_and_dds_func.c:143:6:DAC_Write_FAST	8	static
-../Core/Src/dac_and_dds_func.c:151:6:DAC_SendInit	8	static
-../Core/Src/dac_and_dds_func.c:176:6:DAC_TEMP_CAL	32	static
-../Core/Src/dac_and_dds_func.c:215:6:DDS_Calculation	56	static
-../Core/Src/dac_and_dds_func.c:274:6:DDS_Init	24	static
-../Core/Src/dac_and_dds_func.c:345:6:DDS_Update	24	static
+../Core/Src/dac_and_dds_func.c:103:6:CPLD_control	32	static
+../Core/Src/dac_and_dds_func.c:142:6:DAC_Write	16	static
+../Core/Src/dac_and_dds_func.c:157:6:DAC_Write_FAST	8	static
+../Core/Src/dac_and_dds_func.c:165:6:DAC_SendInit	8	static
+../Core/Src/dac_and_dds_func.c:190:6:DAC_TEMP_CAL	32	static
+../Core/Src/dac_and_dds_func.c:229:6:DDS_Calculation	40	static
+../Core/Src/dac_and_dds_func.c:270:6:DDS_Init	24	static
+../Core/Src/dac_and_dds_func.c:341:6:DDS_Update	24	static

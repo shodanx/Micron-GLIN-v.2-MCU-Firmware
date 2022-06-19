@@ -5,14 +5,14 @@
 #include "display.h"
 
 extern void DDS_Update(void);
-extern void DDS_Calculation(FunctionalState);
+extern void DDS_Calculation(void);
 extern void DAC_SendInit(void);
 extern void DAC_TEMP_CAL(void);
 extern void DAC_Write(uint32_t);
 extern void DAC_Write_FAST(void);
 
 extern void Relay_control(uint8_t,uint8_t);
-extern void CPLD_control(uint8_t);
+extern void CPLD_control(FunctionalState);
 
 extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
 
@@ -213,9 +213,9 @@ void send_answer_to_CDC(uint8_t type)
 //==============================================================================================
 void cmd_SWEEP_START()
 {
-	DDS_Calculation(NEED_UPDATE_CPLD_STATE);
+	DDS_Calculation();
 	DAC_TEMP_CAL();
-	CPLD_control(CPLD_WORD); // Enable LDAC signal
+	CPLD_control(CPLD_ON_STATE); // Enable LDAC signal
 	DAC_SendInit();
 }
 //==============================================================================================
@@ -224,7 +224,7 @@ void cmd_SWEEP_START()
 //==============================================================================================
 void cmd_SWEEP_STOP()
 {
-	CPLD_control(0x0); // Disable LDAC signal
+	CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 	DAC_SendInit();
 }
 //==============================================================================================
@@ -245,7 +245,7 @@ void cmd_DAC_SET(uint32_t code)
 		break;
 	}
 
-	CPLD_control(0x0); // Disable LDAC signal
+	CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 	DAC_SendInit();
 	DAC_TEMP_CAL();
 	DAC_Write(code);
@@ -298,7 +298,16 @@ FunctionalState cmd_SWEEP_RATE(float rate)
 		else
 		{
 			DAC_target_speed=rate;
-			DDS_Calculation(NEED_UPDATE_CPLD_STATE);
+			if(cfg.LDACMODE==0)
+			{
+				CPLD_control(CPLD_OFF_STATE);
+			}
+			else
+			{
+				CPLD_control(CPLD_ON_STATE);
+			}
+
+			DDS_Calculation();
 			return 1;
 		}
 }

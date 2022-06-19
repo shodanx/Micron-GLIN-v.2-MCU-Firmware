@@ -6,9 +6,9 @@
 ../Core/Src/function.c:234:6:cmd_DAC_SET	16	static
 ../Core/Src/function.c:257:17:cmd_SET_OUTPUT_VOLTAGE	24	static
 ../Core/Src/function.c:292:17:cmd_SWEEP_RATE	16	static
-../Core/Src/function.c:309:17:cmd_CAL	24	static
-../Core/Src/function.c:370:6:load_data_from_EEPROM	8	static
-../Core/Src/function.c:391:7:binary_to_float	24	static
-../Core/Src/function.c:402:10:float_to_binary	32	static
-../Core/Src/function.c:422:10:EEPROM_read	24	static
-../Core/Src/function.c:439:6:EEPROM_write	24	static
+../Core/Src/function.c:318:17:cmd_CAL	24	static
+../Core/Src/function.c:379:6:load_data_from_EEPROM	8	static
+../Core/Src/function.c:400:7:binary_to_float	24	static
+../Core/Src/function.c:411:10:float_to_binary	32	static
+../Core/Src/function.c:431:10:EEPROM_read	24	static
+../Core/Src/function.c:448:6:EEPROM_write	24	static
