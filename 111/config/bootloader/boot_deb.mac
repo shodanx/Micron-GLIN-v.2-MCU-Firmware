@@ -1,6 +1,0 @@
-//in test.mac 
-execUserReset() 
-{ 
-MSP = *(int*)0x08000000;  //set the stack pointer to the beginning of the bootloader vector table 
-PC = *(int*)0x08000004;  //set the program counter to the beginning of the bootloader reset handler  
-} 
