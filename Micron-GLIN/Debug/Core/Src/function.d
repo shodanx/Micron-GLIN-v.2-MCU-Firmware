@@ -30,13 +30,11 @@ Core/Src/function.o: ../Core/Src/function.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_usb.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h \
- ../Core/Inc/function.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/App/usb_device.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h \
- ../Core/Inc/main.h \
- D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h \
- ../Core/Inc/display.h ../Core/Inc/main.h
+ ../Core/Inc/function.h ../USB_DEVICE/App/usb_device.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
+ ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/main.h \
+ ../Circular-buffer/inc/circular_buffer.h ../Core/Inc/display.h \
+ ../Core/Inc/main.h
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h:
 ../Core/Inc/stm32l1xx_hal_conf.h:
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h:
@@ -69,10 +67,10 @@ Core/Src/function.o: ../Core/Src/function.c \
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pcd_ex.h:
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_exti.h:
 ../Core/Inc/function.h:
-D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/App/usb_device.h:
-D:/Micron-GLIN\ soft/Micron-GLIN/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
-D:/Micron-GLIN\ soft/Micron-GLIN/USB_DEVICE/Target/usbd_conf.h:
+../USB_DEVICE/App/usb_device.h:
+../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
+../USB_DEVICE/Target/usbd_conf.h:
 ../Core/Inc/main.h:
-D:/Micron-GLIN\ soft/Micron-GLIN/Circular-buffer/inc/circular_buffer.h:
+../Circular-buffer/inc/circular_buffer.h:
 ../Core/Inc/display.h:
 ../Core/Inc/main.h:

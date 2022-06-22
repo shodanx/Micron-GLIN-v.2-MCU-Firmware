@@ -80,8 +80,8 @@ all: main-build
 main-build: Micron-GLIN.elf secondary-outputs
 
 # Tool invocations
-Micron-GLIN.elf Micron-GLIN.map: $(OBJS) $(USER_OBJS) D:\Micron-GLIN\ soft\Micron-GLIN\STM32L152CBUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "Micron-GLIN.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\Micron-GLIN soft\Micron-GLIN\STM32L152CBUX_FLASH.ld" -Wl,-Map="Micron-GLIN.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+Micron-GLIN.elf Micron-GLIN.map: $(OBJS) $(USER_OBJS) ../STM32L152CBUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "Micron-GLIN.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"../STM32L152CBUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Micron-GLIN.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
