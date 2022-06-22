@@ -98,7 +98,6 @@ float DAC_fullrange_voltage;
 float cal_DAC_up_voltage;
 float cal_DAC_down_voltage;
 
-
 uint8_t Current_output_status;
 
 uint32_t DAC_code=0x0;
