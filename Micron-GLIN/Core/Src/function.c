@@ -47,22 +47,21 @@ uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"I'm Micron-GLIN, please tell me what you want?\n\r"
 		"\n\r"
 		"Usage:\n\r"
-		"SWEEP START/STOP         - control sweep cycle\n\r"
-		"SWEEP_RATE 1.0E-3        - set dv/dt speed (range 1...0.001)\n\r"
-		"SWEEP_DIRECTION UP/DOWN  - set dv/dt direction(increase or decrease)\n\r"
-		"DAC_SET TOP/DOWN/voltage - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
-		"OUTPUT OFF/X1/X2/X4      - set output mode\n\r"
-		"SHOW INFO                - show calibration constant and operational data\n\r"
-
+		"SWEEP START/STOP             - control sweep cycle\n\r"
+		"SWEEP_RATE 1.0E-3            - set dv/dt speed (range 1...0.001)\n\r"
+		"SWEEP_DIRECTION UP/DOWN/BOTH - set dv/dt direction(increase, decrease or cycle)\n\r"
+		"DAC_SET TOP/DOWN/voltage     - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
+		"OUTPUT OFF/X1/X2/X4          - set output mode\n\r"
+		"SHOW INFO                    - show calibration constant and operational data\n\r"
 		"\n\r"
-		"DAC_CAL_TOP 10.01234     - set maximum positive DAC voltage\n\r"
-		"DAC_CAL_DOWN -9.99876    - set maximum negative DAC voltage\n\r"
-		"DAC_CAL_TEMP START       - start DAC temperature calibration cycle\n\r"
+		"DAC_CAL_TOP 10.01234        - set maximum positive DAC voltage\n\r"
+		"DAC_CAL_DOWN -9.99876       - set maximum negative DAC voltage\n\r"
+		"DAC_CAL_TEMP START          - start DAC temperature calibration cycle\n\r"
 		"DAC_CAL_POLY_A 1.266415E-16 - set Linearity correction\n\r" //1.266415E-16x2 - 1.845382E-10x + 1.000056E+00
 		"DAC_CAL_POLY_B 1.845382E-10 - set Linearity correction\n\r"
 		"DAC_CAL_POLY_C 1.000056E+00 - set Linearity correction\n\r"
-		"GAIN_X2_CAL 2.001234     - set LT5400 x2 gain\n\r"
-		"GAIN_X4_CAL 4.001234     - set LT5400 x4 gain\n\r"
+		"GAIN_X2_CAL 2.001234        - set LT5400 x2 gain\n\r"
+		"GAIN_X4_CAL 4.001234        - set LT5400 x4 gain\n\r"
 		"\n\r"
 		"\n\r"
 		"Enter command: ";
@@ -149,14 +148,18 @@ void display_screen(uint8_t type)
 	{
 	//----------------------------------------------------------//
 	case dU_dt_SCREEN:
-		if(DAC_code_direction==1)
+		if(DAC_code_direction==DIRECTION_UP_STATE)
 		{
 			sign='+';
 		}
-		else
+		else if(DAC_code_direction==DIRECTION_DOWN_STATE)
 		{
 			sign='-';
+		} else
+		{
+			sign='*';
 		}
+
 		sprintf(lcd_buf,"' %c%1.4EV/s",sign, DAC_target_speed);
 		LcdString(1, 1);
 
@@ -266,14 +269,17 @@ void cmd_DAC_SET(uint32_t code)
 {
 	if (code>0xFFFFF)return;
 
-	switch(code)
+	if(DAC_code_direction!=DIRECTION_BOTH_STATE)
 	{
-	case DAC_CODE_DOWN:
-		DAC_code_direction=1;
-		break;
-	case DAC_CODE_TOP:
-		DAC_code_direction=0;
-		break;
+		switch(code)
+		{
+		case DAC_CODE_DOWN:
+			DAC_code_direction=DIRECTION_UP_STATE;
+			break;
+		case DAC_CODE_TOP:
+			DAC_code_direction=DIRECTION_DOWN_STATE;
+			break;
+		}
 	}
 
 	CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal

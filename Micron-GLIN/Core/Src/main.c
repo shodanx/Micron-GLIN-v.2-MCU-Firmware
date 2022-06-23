@@ -111,7 +111,8 @@ float cal_DAC_down_voltage;
 uint8_t Current_output_status;
 
 uint32_t DAC_code=0x0;
-FunctionalState DAC_code_direction;
+uint8_t DAC_code_direction;
+FunctionalState DAC_code_direction_for_both_mode;
 
 FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
@@ -152,7 +153,7 @@ int main(void)
 
 	DAC_target_speed=0.01; //  V/s
 	DAC_code=DAC_CODE_MIDDLE;
-	DAC_code_direction=1;
+	DAC_code_direction=DIRECTION_BOTH_STATE;
 
   /* USER CODE END 1 */
 
@@ -350,42 +351,59 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 	if(GPIO_Pin == GPIO_PIN_9)
 	{
-		if(DAC_code_direction)
+		switch(DAC_code_direction)
 		{
+		//----------------------------------------------------------//
+		case DIRECTION_UP_STATE:
 			if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
 			{
 				DAC_code+=DDS_target_multipiller;
 				DAC_tx_buffer=0x01000000; // Write DAC-DATA
 				DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
-
-				DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFFFF0000)>>16;
-				DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
-
 			} else  {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
 				send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
-		}
-		else
-		{
+		break;
+
+		case DIRECTION_DOWN_STATE:
 			if(DAC_code>=DDS_target_multipiller)
 			{
 				DAC_code-=DDS_target_multipiller;
 				DAC_tx_buffer=0x01000000; // Write DAC-DATA
 				DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
-
-				DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFFFF0000)>>16;
-				DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
-
 			} else {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
 				send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
+		break;
+
+		case DIRECTION_BOTH_STATE:
+			if(DAC_code_direction_for_both_mode == 1)
+			{
+				if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
+				{
+					DAC_code+=DDS_target_multipiller;
+					DAC_tx_buffer=0x01000000; // Write DAC-DATA
+					DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
+				} else  DAC_code_direction_for_both_mode=0;
+			} else
+			{
+				if(DAC_code>=DDS_target_multipiller)
+				{
+					DAC_code-=DDS_target_multipiller;
+					DAC_tx_buffer=0x01000000; // Write DAC-DATA
+					DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
+				} else DAC_code_direction_for_both_mode=1;
+			}
+		break;
 		}
+		DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFFFF0000)>>16;
+		DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 	}
 }
 
@@ -645,6 +663,7 @@ void Parsing_USB_command(void)
 		sprintf((char *)large_string_buffer,"LT5400 gain X2 correction: %1.6E\n\r",gain_x2_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		sprintf((char *)large_string_buffer,"LT5400 gain X4 correction: %1.6E\n\r\n\r",gain_x4_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		sprintf((char *)large_string_buffer,"DAC code: 0x%x\n\r",(unsigned int)DAC_code);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"DDS FTW: 0x%x\n\r",(unsigned int)DDS_FTW);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		sprintf((char *)large_string_buffer,"CPLD control word: 0x%x\n\r",CPLD_WORD);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		sprintf((char *)large_string_buffer,"Output mode: 0x%x\n\r",Current_output_status);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		sprintf((char *)large_string_buffer,"Temperature: %2.3f°C\n\r",TMP117_get_Temperature(hi2c1)*0.0078125);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
@@ -665,23 +684,30 @@ void Parsing_USB_command(void)
 	if(!(strcmp(decoded_string_1,"SWEEP_DIRECTION")))
 	{
 		if(!(strcmp(decoded_string_2,"UP"))){
-			DAC_code_direction=1;
+			DAC_code_direction=DIRECTION_UP_STATE;
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
 		}
 		else
 		{
 			if(!(strcmp(decoded_string_2,"DOWN"))){
-				DAC_code_direction=0;
+				DAC_code_direction=DIRECTION_DOWN_STATE;
 				send_answer_to_CDC(OK_TYPE_2);
 				return;
 			}
 			else
 			{
-				send_answer_to_CDC(ERROR_TYPE_1);
-				return;
+				if(!(strcmp(decoded_string_2,"BOTH"))){
+					DAC_code_direction=DIRECTION_BOTH_STATE;
+					send_answer_to_CDC(OK_TYPE_2);
+					return;
+				}
+				else
+				{
+					send_answer_to_CDC(ERROR_TYPE_1);
+					return;
+				}
 			}
-
 		}
 	}
 

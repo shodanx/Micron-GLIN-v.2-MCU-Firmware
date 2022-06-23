@@ -41,6 +41,10 @@
 #define CPLD_ON_STATE			1
 #define CPLD_RT_UPDATE_STATE	2
 
+#define DIRECTION_DOWN_STATE	0
+#define DIRECTION_UP_STATE		1
+#define DIRECTION_BOTH_STATE	2
+
 #define dU_dt_SCREEN		0
 #define Hello_SCREEN		1
 #define Warm_up_SCREEN		2

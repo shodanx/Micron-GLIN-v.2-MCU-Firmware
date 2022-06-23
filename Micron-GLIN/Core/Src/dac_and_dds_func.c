@@ -18,7 +18,7 @@ float gain_x4_coeff;
 void load_data_from_EEPROM(void);
 
 extern uint8_t eta_hours,eta_minute,eta_second;
-extern FunctionalState DAC_code_direction;
+extern uint8_t DAC_code_direction;
 
 extern float DDS_target_frequecny;
 extern float DAC_target_speed;
@@ -241,7 +241,7 @@ void DDS_Calculation(void)
 
 	DDS_FTW=(((DDS_target_frequecny/corr_coeff)*((1<<CPLD_WORD)+1))/DDS_clock_frequecny)*(float)0xFFFFFFFF;
 
-	if(DAC_code_direction)
+	if(DAC_code_direction==DIRECTION_UP_STATE)
 	{
 		codes_left=0xFFFFF-DAC_code;
 	}
