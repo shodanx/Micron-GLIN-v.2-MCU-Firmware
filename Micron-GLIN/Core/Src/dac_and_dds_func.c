@@ -24,6 +24,8 @@ extern float DDS_target_frequecny;
 extern float DAC_target_speed;
 extern uint32_t DDS_target_multipiller;
 
+extern FunctionalState DAC_code_direction_for_cycle_mode;
+
 extern uint32_t DAC_tx_buffer;
 extern uint16_t DAC_tx_tmp_buffer[2];
 extern float DDS_FTW;
@@ -241,13 +243,25 @@ void DDS_Calculation(void)
 
 	DDS_FTW=(((DDS_target_frequecny/corr_coeff)*((1<<CPLD_WORD)+1))/DDS_clock_frequecny)*(float)0xFFFFFFFF;
 
-	if(DAC_code_direction==DIRECTION_UP_STATE)
+	switch(DAC_code_direction)
 	{
+	//----------------------------------------------------------//
+	case DIRECTION_UP_STATE:
 		codes_left=0xFFFFF-DAC_code;
-	}
-	else
-	{
+		break;
+	case DIRECTION_DOWN_STATE:
 		codes_left=DAC_code;
+		break;
+	case DIRECTION_CYCLE_STATE:
+		if(DAC_code_direction_for_cycle_mode == 1)
+		{
+			codes_left=0xFFFFF-DAC_code;
+		}
+		else
+		{
+			codes_left=DAC_code;
+		}
+		break;
 	}
 
 	second_left=codes_left/DDS_target_multipiller/DDS_target_frequecny;

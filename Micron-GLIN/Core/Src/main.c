@@ -112,7 +112,7 @@ uint8_t Current_output_status;
 
 uint32_t DAC_code=0x0;
 uint8_t DAC_code_direction;
-FunctionalState DAC_code_direction_for_both_mode;
+FunctionalState DAC_code_direction_for_cycle_mode;
 
 FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
@@ -153,7 +153,7 @@ int main(void)
 
 	DAC_target_speed=0.01; //  V/s
 	DAC_code=DAC_CODE_MIDDLE;
-	DAC_code_direction=DIRECTION_BOTH_STATE;
+	DAC_code_direction=DIRECTION_CYCLE_STATE;
 
   /* USER CODE END 1 */
 
@@ -382,15 +382,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			}
 		break;
 
-		case DIRECTION_BOTH_STATE:
-			if(DAC_code_direction_for_both_mode == 1)
+		case DIRECTION_CYCLE_STATE:
+			if(DAC_code_direction_for_cycle_mode == 1)
 			{
 				if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
 				{
 					DAC_code+=DDS_target_multipiller;
 					DAC_tx_buffer=0x01000000; // Write DAC-DATA
 					DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
-				} else  DAC_code_direction_for_both_mode=0;
+				} else  DAC_code_direction_for_cycle_mode=0;
 			} else
 			{
 				if(DAC_code>=DDS_target_multipiller)
@@ -398,7 +398,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 					DAC_code-=DDS_target_multipiller;
 					DAC_tx_buffer=0x01000000; // Write DAC-DATA
 					DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
-				} else DAC_code_direction_for_both_mode=1;
+				} else DAC_code_direction_for_cycle_mode=1;
 			}
 		break;
 		}
@@ -697,8 +697,8 @@ void Parsing_USB_command(void)
 			}
 			else
 			{
-				if(!(strcmp(decoded_string_2,"BOTH"))){
-					DAC_code_direction=DIRECTION_BOTH_STATE;
+				if(!(strcmp(decoded_string_2,"CYCLE"))){
+					DAC_code_direction=DIRECTION_CYCLE_STATE;
 					send_answer_to_CDC(OK_TYPE_2);
 					return;
 				}

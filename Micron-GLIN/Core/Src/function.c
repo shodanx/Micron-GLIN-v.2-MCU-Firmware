@@ -47,12 +47,12 @@ uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"I'm Micron-GLIN, please tell me what you want?\n\r"
 		"\n\r"
 		"Usage:\n\r"
-		"SWEEP START/STOP             - control sweep cycle\n\r"
-		"SWEEP_RATE 1.0E-3            - set dv/dt speed (range 1...0.001)\n\r"
-		"SWEEP_DIRECTION UP/DOWN/BOTH - set dv/dt direction(increase, decrease or cycle)\n\r"
-		"DAC_SET TOP/DOWN/voltage     - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
-		"OUTPUT OFF/X1/X2/X4          - set output mode\n\r"
-		"SHOW INFO                    - show calibration constant and operational data\n\r"
+		"SWEEP START/STOP              - control sweep cycle\n\r"
+		"SWEEP_RATE 1.0E-3             - set dv/dt speed (range 1...0.001)\n\r"
+		"SWEEP_DIRECTION UP/DOWN/CYCLE - set dv/dt direction(increase, decrease or cycle)\n\r"
+		"DAC_SET TOP/DOWN/voltage      - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
+		"OUTPUT OFF/X1/X2/X4           - set output mode\n\r"
+		"SHOW INFO                     - show calibration constant and operational data\n\r"
 		"\n\r"
 		"DAC_CAL_TOP 10.01234        - set maximum positive DAC voltage\n\r"
 		"DAC_CAL_DOWN -9.99876       - set maximum negative DAC voltage\n\r"
@@ -269,7 +269,7 @@ void cmd_DAC_SET(uint32_t code)
 {
 	if (code>0xFFFFF)return;
 
-	if(DAC_code_direction!=DIRECTION_BOTH_STATE)
+	if(DAC_code_direction!=DIRECTION_CYCLE_STATE)
 	{
 		switch(code)
 		{
