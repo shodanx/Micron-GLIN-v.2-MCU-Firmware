@@ -90,6 +90,7 @@ char large_string_buffer[60];
 uint8_t eta_hours,eta_minute,eta_second;
 
 int16_t Enc_Counter = 0;
+uint32_t Display_timeout=0;
 
 CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
 
@@ -114,6 +115,8 @@ uint32_t DAC_code=0x0;
 uint8_t DAC_code_direction;
 FunctionalState DAC_code_direction_for_cycle_mode;
 
+FunctionalState Display_need_wakeup=1;
+FunctionalState Display_status=0;
 FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
 FunctionalState Ramp_dac_step_complete=0;
@@ -153,7 +156,7 @@ int main(void)
 
 	DAC_target_speed=0.01; //  V/s
 	DAC_code=DAC_CODE_MIDDLE;
-	DAC_code_direction=DIRECTION_CYCLE_STATE;
+	DAC_code_direction=DIRECTION_UP_STATE;
 
   /* USER CODE END 1 */
 
@@ -188,7 +191,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   init_LCD();
-
 /*
   display_screen(Hello_SCREEN);
   LcdUpdate();
@@ -238,6 +240,7 @@ int main(void)
 				i++;
 			}
 			Parsing_USB_command();
+			if(Display_status==0)Display_need_wakeup=1;
 		}
 
 		if(Need_update_DDS)
@@ -251,12 +254,30 @@ int main(void)
 			DDS_Calculation();
 
 		}
-		if(Need_update_Display)
+		if(Need_update_Display && Display_status)
 		{
 			display_screen(dU_dt_SCREEN);
 			LcdUpdate();
 			LcdClear_massive();
-			Need_update_Display=0;
+		}
+		if(Display_need_wakeup)
+		{
+			Display_need_wakeup=0;
+			Poweron_LCD();
+			Display_timeout=0;
+			Need_update_Display=1;
+		} else
+		{
+			if(Display_status==1) // If display on
+			{
+				// 1 hour timeout if output is off
+				// 1 day timeout if output is on
+				if((Display_timeout>72000 && Current_output_status==Output_off_STATE) || (Display_timeout>1728000 && Current_output_status!=Output_off_STATE))
+				{
+					Poweroff_LCD();
+					Display_timeout=0;
+				}
+			} else Display_timeout=0;
 		}
 
     /* USER CODE END WHILE */
@@ -331,9 +352,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		if(cfg.LDACMODE==1)Need_update_DDS=1;
 	}
 
-	if (htim == &htim2 )//User interface workload, each 10ms
+	if (htim == &htim2 )//User interface workload, each 50ms
 	{
 		Need_update_Display=1;
+		Display_timeout++;
 	}
 
 }
@@ -349,6 +371,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	DAC_Write_FAST();
 	Ramp_dac_step_complete=1;
 
+	if((GPIO_Pin == GPIO_PIN_8) || (GPIO_Pin == GPIO_PIN_13)) Display_need_wakeup=1;
+
 	if(GPIO_Pin == GPIO_PIN_9)
 	{
 		switch(DAC_code_direction)
@@ -358,8 +382,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
 			{
 				DAC_code+=DDS_target_multipiller;
-				DAC_tx_buffer=0x01000000; // Write DAC-DATA
-				DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
 			} else  {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
@@ -372,8 +394,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if(DAC_code>=DDS_target_multipiller)
 			{
 				DAC_code-=DDS_target_multipiller;
-				DAC_tx_buffer=0x01000000; // Write DAC-DATA
-				DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
 			} else {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
@@ -388,20 +408,18 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
 				{
 					DAC_code+=DDS_target_multipiller;
-					DAC_tx_buffer=0x01000000; // Write DAC-DATA
-					DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
 				} else  DAC_code_direction_for_cycle_mode=0;
 			} else
 			{
 				if(DAC_code>=DDS_target_multipiller)
 				{
 					DAC_code-=DDS_target_multipiller;
-					DAC_tx_buffer=0x01000000; // Write DAC-DATA
-					DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
 				} else DAC_code_direction_for_cycle_mode=1;
 			}
 		break;
 		}
+		DAC_tx_buffer=0x01000000; // Write DAC-DATA
+		DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
 		DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFFFF0000)>>16;
 		DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 	}

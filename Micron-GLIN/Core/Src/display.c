@@ -11,7 +11,9 @@
 char lcd_buf[20];               // текстовый буфер для вывода на LCD
 unsigned char LcdCache[LCD_CACHSIZE];   // Фреймбуфер
 unsigned int LcdCacheIdx = 0;   // Текущий адрес во фреймбуфере
-
+extern FunctionalState Display_need_wakeup;
+extern FunctionalState Display_status;
+extern FunctionalState Need_update_Display;
 
 void LcdSend(uint8_t data, uint8_t cmd) //Sends data to display controller
 {
@@ -37,6 +39,7 @@ void LcdUpdate(void)            //Copies the LCD cache into the device RAM
 {
   int i = 0, j = 0;
 
+  Need_update_Display=0;
   LcdSend(HD44780_SET_CGRAM_ADD, lcd_CMD);//Позицианируем курсор на начало координат
   LcdSend(HD44780_SET_DDRAM_ADD, lcd_CMD);
 
@@ -359,6 +362,19 @@ void send_data(unsigned char data) //вывод 2хполбайта на инд�
   send_nibble(data & 0x0F);
 }
 
+void send_command(unsigned char data) //вывод 2хполбайта на индикатор
+{
+  lcd44780_RS_0;
+  lcd44780_RW_0;
+
+  //Первым шлем старшие полбайта: по инструкции
+  //сначала столбец, потом строка таблицы знакогенератора
+  send_nibble((data>>4) & 0x0F);
+  send_nibble(data & 0x0F);
+
+  while(check_busy_flag());
+}
+
 int check_busy_flag(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -385,9 +401,29 @@ int check_busy_flag(void)
 	return status;
 }
 
+void Poweroff_LCD() //выключение ЖК
+{
+	Display_status=0;
+
+	send_command(0x01); // очистили от мусора ОЗУ (т.с. что clear())
+	send_command(0x0A); // Display off
+    send_command(0x1B); // Internal DCDC off
+}
+
+void Poweron_LCD() //включение ЖК
+{
+	Display_status=1;
+
+	send_command(0x0E); // Display on
+    send_command(0x1F); // Internal DCDC on
+    send_command(0x01); // очистили от мусора ОЗУ (т.с. что clear())
+}
+
+
 void init_LCD() //инициализация ЖК
 {
-	HAL_GPIO_WritePin(Display_Power_GPIO_Port, Display_Power_Pin, GPIO_PIN_RESET);
+	Display_status=1;
+	HAL_GPIO_WritePin(Display_Power_GPIO_Port, Display_Power_Pin, GPIO_PIN_RESET); // подаем питание на дисплей
   //Выводы в 0
     HAL_GPIO_WritePin(Display_RS_GPIO_Port, Display_RS_Pin, GPIO_PIN_SET);//  PIN_OFF(PIN_RS); !!!
     HAL_GPIO_WritePin(Display_EN_GPIO_Port, Display_EN_Pin, GPIO_PIN_RESET);//  PIN_OFF(PIN_E);
@@ -406,32 +442,14 @@ void init_LCD() //инициализация ЖК
 
 	while(check_busy_flag());
 
-	send_nibble(0x00);
-	send_nibble(0x0E);// D=1 C=1 B=0
+	send_command(0x0E);// D=1 C=1 B=0
+	send_command(0x01);
+	send_command(0x06); // I/D=1  S/H=0
+	send_command(0x2A);// DL=0 N=1 F=0 FT1=1 FT0=0
+	send_command(0x1F); //переключение в графику
+    send_command(0x01); //очистили от мусора ОЗУ (т.с. что clear())
 
-	while(check_busy_flag());
-	send_nibble(0x00);
-	send_nibble(0x01);
-
-	while(check_busy_flag());
-	send_nibble(0x00);
-	send_nibble(0x06); // I/D=1  S/H=0
-//	send_nibble(0x04); // I/D=0  S/H=0
-
-	while(check_busy_flag());
-
-    lcd44780_RS_0;
-    lcd44780_RW_0;
-	send_nibble(0x02); // DL=0
-	send_nibble(0x0A);// N=1 F=0 FT1=1 FT0=0
-	while(check_busy_flag());
-
-
-    send_data(0x1F); //переключение в графику
-    while(check_busy_flag());
-
-    send_data(0x01); //очистили от мусора ОЗУ (т.с. что clear())
-    while(check_busy_flag());
+    lcd44780_RS_1;
 
     LcdClear_massive();
 
