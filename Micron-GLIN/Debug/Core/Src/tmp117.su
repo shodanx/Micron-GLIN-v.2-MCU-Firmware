@@ -17,4 +17,4 @@
 ../Core/Src/tmp117.c:327:10:TMP117_get_Temperature_Offset	16	static
 ../Core/Src/tmp117.c:345:10:TMP117_get_ID_Register	16	static
 ../Core/Src/tmp117.c:363:6:TMP117_Initialization	88	static
-../Core/Src/tmp117.c:379:6:TMP117_Initialization_DEFAULT	88	static
+../Core/Src/tmp117.c:380:6:TMP117_Initialization_DEFAULT	88	static

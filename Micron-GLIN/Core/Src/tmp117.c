@@ -363,8 +363,9 @@ uint16_t TMP117_get_ID_Register       (I2C_HandleTypeDef i2c)
 void TMP117_Initialization               (I2C_HandleTypeDef i2c)
 {
     TMP117_set_Configuration(i2c,0x02,0x22);
-	HAL_Delay(100); // wait 1ms
-	TMP117_set_Configuration(i2c,0x02,0x20);
+	HAL_Delay(2); // wait 2ms
+	TMP117_set_Configuration(i2c,0x03,0xA0);
+	//TMP117_set_Configuration(i2c,0x02,0x20);
 //      TMP117_set_Temperature_Offset(i2c,0x00,0x00); //Default Value
 //      TMP117_set_LowLimit(i2c,0x12,0x80);           //Set 10 Celcius
 //      TMP117_set_HighLimit(i2c,0x51,0x20);          //Set 40 Celcius

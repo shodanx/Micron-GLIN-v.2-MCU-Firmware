@@ -58,7 +58,7 @@
 
 
 char myLCDstr[32];
-float temperature=10.23;
+//float temperature=10.23;
 uint16_t tmpx;
 
 extern uint8_t CDC_Transmit_FS(uint8_t*, uint16_t);
@@ -76,6 +76,16 @@ extern void CPLD_control(uint8_t);
 extern volatile FunctionalState USB_CDC_End_Line_Received;
 
 extern uint8_t command_buffer[31];
+
+extern float cal_DAC_up_voltage;
+extern float cal_DAC_down_voltage;
+extern float corr_coeff_1;
+extern float corr_coeff_2;
+extern float corr_coeff_3;
+extern float gain_x2_coeff;
+extern float gain_x4_coeff;
+
+char large_string_buffer[60];
 
 uint8_t eta_hours,eta_minute,eta_second;
 
@@ -384,6 +394,7 @@ void Parsing_USB_command(void)
 	char *found;
 	char decoded_string_1[31];
 	char decoded_string_2[31];
+	uint8_t cdc_counter=0;
 
 	found = strtok((char *)command_buffer," ");
 	if(found!=NULL)
@@ -621,6 +632,34 @@ void Parsing_USB_command(void)
 			return;
 		}
 	}
+
+	// ==== SHOW command ====
+	if(!(strcmp(decoded_string_1,"SHOW")))
+	{
+	if(!(strcmp(decoded_string_2,"INFO"))){
+		sprintf((char *)large_string_buffer,"\n\rDAC 0xFFFFF voltage calibration constant: %1.6E\n\r",cal_DAC_up_voltage);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"DAC 0x00000 voltage calibration constant: %1.6E\n\r",cal_DAC_down_voltage);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"Linearity correction A: %1.6E\n\r",corr_coeff_1);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"Linearity correction B: %1.6E\n\r",corr_coeff_2);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"Linearity correction C: %1.6E\n\r",corr_coeff_3);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"LT5400 gain X2 correction: %1.6E\n\r",gain_x2_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"LT5400 gain X4 correction: %1.6E\n\r\n\r",gain_x4_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"DAC code: 0x%x\n\r",(unsigned int)DAC_code);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"CPLD control word: 0x%x\n\r",CPLD_WORD);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"Output mode: 0x%x\n\r",Current_output_status);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		sprintf((char *)large_string_buffer,"Temperature: %2.3f°C\n\r",TMP117_get_Temperature(hi2c1)*0.0078125);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		send_answer_to_CDC(OK_TYPE_2);
+		return;
+		}
+		else
+		{
+			send_answer_to_CDC(ERROR_TYPE_1);
+			return;
+		}
+	}
+
+
+
 
 	// ==== SWEEP_DIRECTION command ====
 	if(!(strcmp(decoded_string_1,"SWEEP_DIRECTION")))
