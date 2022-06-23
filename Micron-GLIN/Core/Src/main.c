@@ -368,13 +368,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //==============================================================================================
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	DAC_Write_FAST();
-	Ramp_dac_step_complete=1;
-
-	if((GPIO_Pin == GPIO_PIN_8) || (GPIO_Pin == GPIO_PIN_13)) Display_need_wakeup=1;
-
-	if(GPIO_Pin == GPIO_PIN_9)
+	if(GPIO_Pin == GPIO_PIN_9) // CPU_IRQ signal from Timebase CPLD
 	{
+		DAC_Write_FAST(); // Сначала стреляем, а потом уже разговариваем
+		Ramp_dac_step_complete=1;
+
 		switch(DAC_code_direction)
 		{
 		//----------------------------------------------------------//
@@ -423,6 +421,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFFFF0000)>>16;
 		DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 	}
+
+	if((GPIO_Pin == GPIO_PIN_8) || (GPIO_Pin == GPIO_PIN_13))Display_need_wakeup=1;
 }
 
 void Parsing_USB_command(void)

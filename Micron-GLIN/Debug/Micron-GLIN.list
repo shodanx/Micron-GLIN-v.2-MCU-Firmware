@@ -7399,217 +7399,217 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  8003ad4:	af00      	add	r7, sp, #0
  8003ad6:	4603      	mov	r3, r0
  8003ad8:	80fb      	strh	r3, [r7, #6]
-	DAC_Write_FAST();
- 8003ada:	f7fd ff45 	bl	8001968 <DAC_Write_FAST>
-	Ramp_dac_step_complete=1;
- 8003ade:	4b4c      	ldr	r3, [pc, #304]	; (8003c10 <HAL_GPIO_EXTI_Callback+0x140>)
- 8003ae0:	2201      	movs	r2, #1
- 8003ae2:	701a      	strb	r2, [r3, #0]
-
-	if((GPIO_Pin == GPIO_PIN_8) || (GPIO_Pin == GPIO_PIN_13)) Display_need_wakeup=1;
- 8003ae4:	88fb      	ldrh	r3, [r7, #6]
- 8003ae6:	f5b3 7f80 	cmp.w	r3, #256	; 0x100
- 8003aea:	d003      	beq.n	8003af4 <HAL_GPIO_EXTI_Callback+0x24>
- 8003aec:	88fb      	ldrh	r3, [r7, #6]
- 8003aee:	f5b3 5f00 	cmp.w	r3, #8192	; 0x2000
- 8003af2:	d102      	bne.n	8003afa <HAL_GPIO_EXTI_Callback+0x2a>
- 8003af4:	4b47      	ldr	r3, [pc, #284]	; (8003c14 <HAL_GPIO_EXTI_Callback+0x144>)
- 8003af6:	2201      	movs	r2, #1
- 8003af8:	701a      	strb	r2, [r3, #0]
-
-	if(GPIO_Pin == GPIO_PIN_9)
- 8003afa:	88fb      	ldrh	r3, [r7, #6]
- 8003afc:	f5b3 7f00 	cmp.w	r3, #512	; 0x200
- 8003b00:	f040 8083 	bne.w	8003c0a <HAL_GPIO_EXTI_Callback+0x13a>
+	if(GPIO_Pin == GPIO_PIN_9) // CPU_IRQ signal from Timebase CPLD
+ 8003ada:	88fb      	ldrh	r3, [r7, #6]
+ 8003adc:	f5b3 7f00 	cmp.w	r3, #512	; 0x200
+ 8003ae0:	f040 8088 	bne.w	8003bf4 <HAL_GPIO_EXTI_Callback+0x124>
 	{
+		DAC_Write_FAST(); // Сначала стреляем, а потом уже разговариваем
+ 8003ae4:	f7fd ff40 	bl	8001968 <DAC_Write_FAST>
+		Ramp_dac_step_complete=1;
+ 8003ae8:	4b49      	ldr	r3, [pc, #292]	; (8003c10 <HAL_GPIO_EXTI_Callback+0x140>)
+ 8003aea:	2201      	movs	r2, #1
+ 8003aec:	701a      	strb	r2, [r3, #0]
+
 		switch(DAC_code_direction)
- 8003b04:	4b44      	ldr	r3, [pc, #272]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
- 8003b06:	781b      	ldrb	r3, [r3, #0]
- 8003b08:	2b02      	cmp	r3, #2
- 8003b0a:	d037      	beq.n	8003b7c <HAL_GPIO_EXTI_Callback+0xac>
- 8003b0c:	2b02      	cmp	r3, #2
- 8003b0e:	dc61      	bgt.n	8003bd4 <HAL_GPIO_EXTI_Callback+0x104>
- 8003b10:	2b00      	cmp	r3, #0
- 8003b12:	d01c      	beq.n	8003b4e <HAL_GPIO_EXTI_Callback+0x7e>
- 8003b14:	2b01      	cmp	r3, #1
- 8003b16:	d15d      	bne.n	8003bd4 <HAL_GPIO_EXTI_Callback+0x104>
+ 8003aee:	4b49      	ldr	r3, [pc, #292]	; (8003c14 <HAL_GPIO_EXTI_Callback+0x144>)
+ 8003af0:	781b      	ldrb	r3, [r3, #0]
+ 8003af2:	2b02      	cmp	r3, #2
+ 8003af4:	d037      	beq.n	8003b66 <HAL_GPIO_EXTI_Callback+0x96>
+ 8003af6:	2b02      	cmp	r3, #2
+ 8003af8:	dc61      	bgt.n	8003bbe <HAL_GPIO_EXTI_Callback+0xee>
+ 8003afa:	2b00      	cmp	r3, #0
+ 8003afc:	d01c      	beq.n	8003b38 <HAL_GPIO_EXTI_Callback+0x68>
+ 8003afe:	2b01      	cmp	r3, #1
+ 8003b00:	d15d      	bne.n	8003bbe <HAL_GPIO_EXTI_Callback+0xee>
 		{
 		//----------------------------------------------------------//
 		case DIRECTION_UP_STATE:
 			if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
- 8003b18:	4b40      	ldr	r3, [pc, #256]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003b1a:	681b      	ldr	r3, [r3, #0]
- 8003b1c:	f5c3 237f 	rsb	r3, r3, #1044480	; 0xff000
- 8003b20:	f603 73ff 	addw	r3, r3, #4095	; 0xfff
- 8003b24:	4a3e      	ldr	r2, [pc, #248]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b26:	6812      	ldr	r2, [r2, #0]
- 8003b28:	4293      	cmp	r3, r2
- 8003b2a:	d307      	bcc.n	8003b3c <HAL_GPIO_EXTI_Callback+0x6c>
+ 8003b02:	4b45      	ldr	r3, [pc, #276]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003b04:	681b      	ldr	r3, [r3, #0]
+ 8003b06:	f5c3 237f 	rsb	r3, r3, #1044480	; 0xff000
+ 8003b0a:	f603 73ff 	addw	r3, r3, #4095	; 0xfff
+ 8003b0e:	4a43      	ldr	r2, [pc, #268]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b10:	6812      	ldr	r2, [r2, #0]
+ 8003b12:	4293      	cmp	r3, r2
+ 8003b14:	d307      	bcc.n	8003b26 <HAL_GPIO_EXTI_Callback+0x56>
 			{
 				DAC_code+=DDS_target_multipiller;
- 8003b2c:	4b3c      	ldr	r3, [pc, #240]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b2e:	681a      	ldr	r2, [r3, #0]
- 8003b30:	4b3a      	ldr	r3, [pc, #232]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003b32:	681b      	ldr	r3, [r3, #0]
- 8003b34:	4413      	add	r3, r2
- 8003b36:	4a3a      	ldr	r2, [pc, #232]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b38:	6013      	str	r3, [r2, #0]
+ 8003b16:	4b41      	ldr	r3, [pc, #260]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b18:	681a      	ldr	r2, [r3, #0]
+ 8003b1a:	4b3f      	ldr	r3, [pc, #252]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003b1c:	681b      	ldr	r3, [r3, #0]
+ 8003b1e:	4413      	add	r3, r2
+ 8003b20:	4a3e      	ldr	r2, [pc, #248]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b22:	6013      	str	r3, [r2, #0]
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
 				send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
 		break;
- 8003b3a:	e04b      	b.n	8003bd4 <HAL_GPIO_EXTI_Callback+0x104>
+ 8003b24:	e04b      	b.n	8003bbe <HAL_GPIO_EXTI_Callback+0xee>
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
- 8003b3c:	2000      	movs	r0, #0
- 8003b3e:	f7fd fe3f 	bl	80017c0 <CPLD_control>
+ 8003b26:	2000      	movs	r0, #0
+ 8003b28:	f7fd fe4a 	bl	80017c0 <CPLD_control>
 				DAC_SendInit();
- 8003b42:	f7fd ff2b 	bl	800199c <DAC_SendInit>
+ 8003b2c:	f7fd ff36 	bl	800199c <DAC_SendInit>
 				send_answer_to_CDC(DONE_TYPE_1);
- 8003b46:	2005      	movs	r0, #5
- 8003b48:	f7ff f80c 	bl	8002b64 <send_answer_to_CDC>
+ 8003b30:	2005      	movs	r0, #5
+ 8003b32:	f7ff f817 	bl	8002b64 <send_answer_to_CDC>
 				return;
- 8003b4c:	e05d      	b.n	8003c0a <HAL_GPIO_EXTI_Callback+0x13a>
+ 8003b36:	e068      	b.n	8003c0a <HAL_GPIO_EXTI_Callback+0x13a>
 
 		case DIRECTION_DOWN_STATE:
 			if(DAC_code>=DDS_target_multipiller)
- 8003b4e:	4b34      	ldr	r3, [pc, #208]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b50:	681a      	ldr	r2, [r3, #0]
- 8003b52:	4b32      	ldr	r3, [pc, #200]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003b54:	681b      	ldr	r3, [r3, #0]
- 8003b56:	429a      	cmp	r2, r3
- 8003b58:	d307      	bcc.n	8003b6a <HAL_GPIO_EXTI_Callback+0x9a>
+ 8003b38:	4b38      	ldr	r3, [pc, #224]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b3a:	681a      	ldr	r2, [r3, #0]
+ 8003b3c:	4b36      	ldr	r3, [pc, #216]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003b3e:	681b      	ldr	r3, [r3, #0]
+ 8003b40:	429a      	cmp	r2, r3
+ 8003b42:	d307      	bcc.n	8003b54 <HAL_GPIO_EXTI_Callback+0x84>
 			{
 				DAC_code-=DDS_target_multipiller;
- 8003b5a:	4b31      	ldr	r3, [pc, #196]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b5c:	681a      	ldr	r2, [r3, #0]
- 8003b5e:	4b2f      	ldr	r3, [pc, #188]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003b60:	681b      	ldr	r3, [r3, #0]
- 8003b62:	1ad3      	subs	r3, r2, r3
- 8003b64:	4a2e      	ldr	r2, [pc, #184]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b66:	6013      	str	r3, [r2, #0]
+ 8003b44:	4b35      	ldr	r3, [pc, #212]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b46:	681a      	ldr	r2, [r3, #0]
+ 8003b48:	4b33      	ldr	r3, [pc, #204]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003b4a:	681b      	ldr	r3, [r3, #0]
+ 8003b4c:	1ad3      	subs	r3, r2, r3
+ 8003b4e:	4a33      	ldr	r2, [pc, #204]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b50:	6013      	str	r3, [r2, #0]
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 				DAC_SendInit();
 				send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
 		break;
- 8003b68:	e034      	b.n	8003bd4 <HAL_GPIO_EXTI_Callback+0x104>
+ 8003b52:	e034      	b.n	8003bbe <HAL_GPIO_EXTI_Callback+0xee>
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
- 8003b6a:	2000      	movs	r0, #0
- 8003b6c:	f7fd fe28 	bl	80017c0 <CPLD_control>
+ 8003b54:	2000      	movs	r0, #0
+ 8003b56:	f7fd fe33 	bl	80017c0 <CPLD_control>
 				DAC_SendInit();
- 8003b70:	f7fd ff14 	bl	800199c <DAC_SendInit>
+ 8003b5a:	f7fd ff1f 	bl	800199c <DAC_SendInit>
 				send_answer_to_CDC(DONE_TYPE_1);
- 8003b74:	2005      	movs	r0, #5
- 8003b76:	f7fe fff5 	bl	8002b64 <send_answer_to_CDC>
+ 8003b5e:	2005      	movs	r0, #5
+ 8003b60:	f7ff f800 	bl	8002b64 <send_answer_to_CDC>
 				return;
- 8003b7a:	e046      	b.n	8003c0a <HAL_GPIO_EXTI_Callback+0x13a>
+ 8003b64:	e051      	b.n	8003c0a <HAL_GPIO_EXTI_Callback+0x13a>
 
 		case DIRECTION_CYCLE_STATE:
 			if(DAC_code_direction_for_cycle_mode == 1)
- 8003b7c:	4b29      	ldr	r3, [pc, #164]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
- 8003b7e:	781b      	ldrb	r3, [r3, #0]
- 8003b80:	2b01      	cmp	r3, #1
- 8003b82:	d115      	bne.n	8003bb0 <HAL_GPIO_EXTI_Callback+0xe0>
+ 8003b66:	4b2e      	ldr	r3, [pc, #184]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
+ 8003b68:	781b      	ldrb	r3, [r3, #0]
+ 8003b6a:	2b01      	cmp	r3, #1
+ 8003b6c:	d115      	bne.n	8003b9a <HAL_GPIO_EXTI_Callback+0xca>
 			{
 				if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
- 8003b84:	4b25      	ldr	r3, [pc, #148]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003b86:	681b      	ldr	r3, [r3, #0]
- 8003b88:	f5c3 237f 	rsb	r3, r3, #1044480	; 0xff000
- 8003b8c:	f603 73ff 	addw	r3, r3, #4095	; 0xfff
- 8003b90:	4a23      	ldr	r2, [pc, #140]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b92:	6812      	ldr	r2, [r2, #0]
- 8003b94:	4293      	cmp	r3, r2
- 8003b96:	d307      	bcc.n	8003ba8 <HAL_GPIO_EXTI_Callback+0xd8>
+ 8003b6e:	4b2a      	ldr	r3, [pc, #168]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003b70:	681b      	ldr	r3, [r3, #0]
+ 8003b72:	f5c3 237f 	rsb	r3, r3, #1044480	; 0xff000
+ 8003b76:	f603 73ff 	addw	r3, r3, #4095	; 0xfff
+ 8003b7a:	4a28      	ldr	r2, [pc, #160]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b7c:	6812      	ldr	r2, [r2, #0]
+ 8003b7e:	4293      	cmp	r3, r2
+ 8003b80:	d307      	bcc.n	8003b92 <HAL_GPIO_EXTI_Callback+0xc2>
 				{
 					DAC_code+=DDS_target_multipiller;
- 8003b98:	4b21      	ldr	r3, [pc, #132]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003b9a:	681a      	ldr	r2, [r3, #0]
- 8003b9c:	4b1f      	ldr	r3, [pc, #124]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003b9e:	681b      	ldr	r3, [r3, #0]
- 8003ba0:	4413      	add	r3, r2
- 8003ba2:	4a1f      	ldr	r2, [pc, #124]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003ba4:	6013      	str	r3, [r2, #0]
+ 8003b82:	4b26      	ldr	r3, [pc, #152]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b84:	681a      	ldr	r2, [r3, #0]
+ 8003b86:	4b24      	ldr	r3, [pc, #144]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003b88:	681b      	ldr	r3, [r3, #0]
+ 8003b8a:	4413      	add	r3, r2
+ 8003b8c:	4a23      	ldr	r2, [pc, #140]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b8e:	6013      	str	r3, [r2, #0]
 				if(DAC_code>=DDS_target_multipiller)
 				{
 					DAC_code-=DDS_target_multipiller;
 				} else DAC_code_direction_for_cycle_mode=1;
 			}
 		break;
- 8003ba6:	e014      	b.n	8003bd2 <HAL_GPIO_EXTI_Callback+0x102>
+ 8003b90:	e014      	b.n	8003bbc <HAL_GPIO_EXTI_Callback+0xec>
 				} else  DAC_code_direction_for_cycle_mode=0;
- 8003ba8:	4b1e      	ldr	r3, [pc, #120]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
- 8003baa:	2200      	movs	r2, #0
- 8003bac:	701a      	strb	r2, [r3, #0]
+ 8003b92:	4b23      	ldr	r3, [pc, #140]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
+ 8003b94:	2200      	movs	r2, #0
+ 8003b96:	701a      	strb	r2, [r3, #0]
 		break;
- 8003bae:	e010      	b.n	8003bd2 <HAL_GPIO_EXTI_Callback+0x102>
+ 8003b98:	e010      	b.n	8003bbc <HAL_GPIO_EXTI_Callback+0xec>
 				if(DAC_code>=DDS_target_multipiller)
- 8003bb0:	4b1b      	ldr	r3, [pc, #108]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003bb2:	681a      	ldr	r2, [r3, #0]
- 8003bb4:	4b19      	ldr	r3, [pc, #100]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003bb6:	681b      	ldr	r3, [r3, #0]
- 8003bb8:	429a      	cmp	r2, r3
- 8003bba:	d307      	bcc.n	8003bcc <HAL_GPIO_EXTI_Callback+0xfc>
+ 8003b9a:	4b20      	ldr	r3, [pc, #128]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003b9c:	681a      	ldr	r2, [r3, #0]
+ 8003b9e:	4b1e      	ldr	r3, [pc, #120]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003ba0:	681b      	ldr	r3, [r3, #0]
+ 8003ba2:	429a      	cmp	r2, r3
+ 8003ba4:	d307      	bcc.n	8003bb6 <HAL_GPIO_EXTI_Callback+0xe6>
 					DAC_code-=DDS_target_multipiller;
- 8003bbc:	4b18      	ldr	r3, [pc, #96]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003bbe:	681a      	ldr	r2, [r3, #0]
- 8003bc0:	4b16      	ldr	r3, [pc, #88]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
- 8003bc2:	681b      	ldr	r3, [r3, #0]
- 8003bc4:	1ad3      	subs	r3, r2, r3
- 8003bc6:	4a16      	ldr	r2, [pc, #88]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003bc8:	6013      	str	r3, [r2, #0]
+ 8003ba6:	4b1d      	ldr	r3, [pc, #116]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003ba8:	681a      	ldr	r2, [r3, #0]
+ 8003baa:	4b1b      	ldr	r3, [pc, #108]	; (8003c18 <HAL_GPIO_EXTI_Callback+0x148>)
+ 8003bac:	681b      	ldr	r3, [r3, #0]
+ 8003bae:	1ad3      	subs	r3, r2, r3
+ 8003bb0:	4a1a      	ldr	r2, [pc, #104]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003bb2:	6013      	str	r3, [r2, #0]
 		break;
- 8003bca:	e002      	b.n	8003bd2 <HAL_GPIO_EXTI_Callback+0x102>
+ 8003bb4:	e002      	b.n	8003bbc <HAL_GPIO_EXTI_Callback+0xec>
 				} else DAC_code_direction_for_cycle_mode=1;
- 8003bcc:	4b15      	ldr	r3, [pc, #84]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
- 8003bce:	2201      	movs	r2, #1
- 8003bd0:	701a      	strb	r2, [r3, #0]
+ 8003bb6:	4b1a      	ldr	r3, [pc, #104]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
+ 8003bb8:	2201      	movs	r2, #1
+ 8003bba:	701a      	strb	r2, [r3, #0]
 		break;
- 8003bd2:	bf00      	nop
+ 8003bbc:	bf00      	nop
 		}
 		DAC_tx_buffer=0x01000000; // Write DAC-DATA
- 8003bd4:	4b14      	ldr	r3, [pc, #80]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
- 8003bd6:	f04f 7280 	mov.w	r2, #16777216	; 0x1000000
- 8003bda:	601a      	str	r2, [r3, #0]
+ 8003bbe:	4b19      	ldr	r3, [pc, #100]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
+ 8003bc0:	f04f 7280 	mov.w	r2, #16777216	; 0x1000000
+ 8003bc4:	601a      	str	r2, [r3, #0]
 		DAC_tx_buffer+=(DAC_code & 0xFFFFF)<<4;
- 8003bdc:	4b10      	ldr	r3, [pc, #64]	; (8003c20 <HAL_GPIO_EXTI_Callback+0x150>)
- 8003bde:	681b      	ldr	r3, [r3, #0]
- 8003be0:	011b      	lsls	r3, r3, #4
- 8003be2:	f023 437f 	bic.w	r3, r3, #4278190080	; 0xff000000
- 8003be6:	f023 030f 	bic.w	r3, r3, #15
- 8003bea:	4a0f      	ldr	r2, [pc, #60]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
- 8003bec:	6812      	ldr	r2, [r2, #0]
- 8003bee:	4413      	add	r3, r2
- 8003bf0:	4a0d      	ldr	r2, [pc, #52]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
- 8003bf2:	6013      	str	r3, [r2, #0]
+ 8003bc6:	4b15      	ldr	r3, [pc, #84]	; (8003c1c <HAL_GPIO_EXTI_Callback+0x14c>)
+ 8003bc8:	681b      	ldr	r3, [r3, #0]
+ 8003bca:	011b      	lsls	r3, r3, #4
+ 8003bcc:	f023 437f 	bic.w	r3, r3, #4278190080	; 0xff000000
+ 8003bd0:	f023 030f 	bic.w	r3, r3, #15
+ 8003bd4:	4a13      	ldr	r2, [pc, #76]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
+ 8003bd6:	6812      	ldr	r2, [r2, #0]
+ 8003bd8:	4413      	add	r3, r2
+ 8003bda:	4a12      	ldr	r2, [pc, #72]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
+ 8003bdc:	6013      	str	r3, [r2, #0]
 		DAC_tx_tmp_buffer[0]=(DAC_tx_buffer & 0xFFFF0000)>>16;
- 8003bf4:	4b0c      	ldr	r3, [pc, #48]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
- 8003bf6:	681b      	ldr	r3, [r3, #0]
- 8003bf8:	0c1b      	lsrs	r3, r3, #16
- 8003bfa:	b29a      	uxth	r2, r3
- 8003bfc:	4b0b      	ldr	r3, [pc, #44]	; (8003c2c <HAL_GPIO_EXTI_Callback+0x15c>)
- 8003bfe:	801a      	strh	r2, [r3, #0]
+ 8003bde:	4b11      	ldr	r3, [pc, #68]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
+ 8003be0:	681b      	ldr	r3, [r3, #0]
+ 8003be2:	0c1b      	lsrs	r3, r3, #16
+ 8003be4:	b29a      	uxth	r2, r3
+ 8003be6:	4b10      	ldr	r3, [pc, #64]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
+ 8003be8:	801a      	strh	r2, [r3, #0]
 		DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
- 8003c00:	4b09      	ldr	r3, [pc, #36]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
- 8003c02:	681b      	ldr	r3, [r3, #0]
- 8003c04:	b29a      	uxth	r2, r3
- 8003c06:	4b09      	ldr	r3, [pc, #36]	; (8003c2c <HAL_GPIO_EXTI_Callback+0x15c>)
- 8003c08:	805a      	strh	r2, [r3, #2]
+ 8003bea:	4b0e      	ldr	r3, [pc, #56]	; (8003c24 <HAL_GPIO_EXTI_Callback+0x154>)
+ 8003bec:	681b      	ldr	r3, [r3, #0]
+ 8003bee:	b29a      	uxth	r2, r3
+ 8003bf0:	4b0d      	ldr	r3, [pc, #52]	; (8003c28 <HAL_GPIO_EXTI_Callback+0x158>)
+ 8003bf2:	805a      	strh	r2, [r3, #2]
 	}
+
+	if((GPIO_Pin == GPIO_PIN_8) || (GPIO_Pin == GPIO_PIN_13))Display_need_wakeup=1;
+ 8003bf4:	88fb      	ldrh	r3, [r7, #6]
+ 8003bf6:	f5b3 7f80 	cmp.w	r3, #256	; 0x100
+ 8003bfa:	d003      	beq.n	8003c04 <HAL_GPIO_EXTI_Callback+0x134>
+ 8003bfc:	88fb      	ldrh	r3, [r7, #6]
+ 8003bfe:	f5b3 5f00 	cmp.w	r3, #8192	; 0x2000
+ 8003c02:	d102      	bne.n	8003c0a <HAL_GPIO_EXTI_Callback+0x13a>
+ 8003c04:	4b09      	ldr	r3, [pc, #36]	; (8003c2c <HAL_GPIO_EXTI_Callback+0x15c>)
+ 8003c06:	2201      	movs	r2, #1
+ 8003c08:	701a      	strb	r2, [r3, #0]
 }
  8003c0a:	3708      	adds	r7, #8
  8003c0c:	46bd      	mov	sp, r7
  8003c0e:	bd80      	pop	{r7, pc}
  8003c10:	20000d35 	.word	0x20000d35
- 8003c14:	200007b8 	.word	0x200007b8
- 8003c18:	20000d30 	.word	0x20000d30
- 8003c1c:	200007b0 	.word	0x200007b0
- 8003c20:	20000d2c 	.word	0x20000d2c
- 8003c24:	20000d31 	.word	0x20000d31
- 8003c28:	20000cfc 	.word	0x20000cfc
- 8003c2c:	20000d00 	.word	0x20000d00
+ 8003c14:	20000d30 	.word	0x20000d30
+ 8003c18:	200007b0 	.word	0x200007b0
+ 8003c1c:	20000d2c 	.word	0x20000d2c
+ 8003c20:	20000d31 	.word	0x20000d31
+ 8003c24:	20000cfc 	.word	0x20000cfc
+ 8003c28:	20000d00 	.word	0x20000d00
+ 8003c2c:	200007b8 	.word	0x200007b8
 
 08003c30 <Parsing_USB_command>:
 
