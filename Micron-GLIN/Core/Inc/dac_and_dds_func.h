@@ -14,7 +14,7 @@ void DDS_Calculation(void);
 void DAC_SendInit(void);
 void DAC_TEMP_CAL(void);
 void DAC_Write(uint32_t);
-void DAC_Write_FAST(void);
+__RAM_FUNC void DAC_Write_FAST(void);
 
 void Relay_control(uint8_t,uint8_t);
 void CPLD_control(FunctionalState);

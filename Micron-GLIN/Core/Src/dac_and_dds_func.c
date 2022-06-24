@@ -146,7 +146,7 @@ void DAC_Write(uint32_t value)
 }
 
 //==============================================================================================
-void DAC_Write_FAST(void)
+__RAM_FUNC void DAC_Write_FAST(void)
 {
 	HAL_GPIO_WritePin(DAC_SYNC_GPIO_Port, DAC_SYNC_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)DAC_tx_tmp_buffer,2,2);

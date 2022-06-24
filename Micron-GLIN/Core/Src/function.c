@@ -38,10 +38,10 @@ extern uint8_t eta_hours,eta_minute,eta_second;
 volatile FunctionalState USB_CDC_End_Line_Received;
 uint8_t command_buffer[31];
 
-uint8_t OK[]="OK\n\r";
-uint8_t run_cal[]="\r\nCalibration in progress..";
-uint8_t clear[]="\033c \r\n";
-uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
+const uint8_t OK[]="OK\n\r";
+const uint8_t run_cal[]="\r\nCalibration in progress..";
+const uint8_t clear[]="\033c \r\n";
+const uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"\n\r"
 		"Hello dear ampnuts!\n\r"
 		"I'm Micron-GLIN, please tell me what you want?\n\r"
@@ -65,9 +65,9 @@ uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"\n\r"
 		"\n\r"
 		"Enter command: ";
-uint8_t OK_Enter[]="\r\n OK \n\rEnter command: ";
-uint8_t Error2[]="\r\n Value out of range \n\r\n\rEnter command: ";
-uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
+const uint8_t OK_Enter[]="\r\n OK \n\rEnter command: ";
+const uint8_t Error2[]="\r\n Value out of range \n\r\n\rEnter command: ";
+const uint8_t Done[]="\r\n CYCLE COMPLETE ! \r\n";
 //==============================================================================================
 
 
@@ -217,25 +217,25 @@ void send_answer_to_CDC(uint8_t type)
 	switch(type)
 	{
 	case ERROR_TYPE_1:
-		while((CDC_Transmit_FS(Error1, strlen((const char *)Error1))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)Error1, strlen((const char *)Error1))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case ERROR_TYPE_2:
-		while((CDC_Transmit_FS(Error2, strlen((const char *)Error2))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)Error2, strlen((const char *)Error2))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case OK_TYPE_1:
-		while((CDC_Transmit_FS(OK, strlen((const char *)OK))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)OK, strlen((const char *)OK))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case OK_TYPE_2:
-		while((CDC_Transmit_FS(OK_Enter, strlen((const char *)OK_Enter))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)OK_Enter, strlen((const char *)OK_Enter))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case CLEAR_TYPE_1:
-		while((CDC_Transmit_FS(clear, strlen((const char *)clear))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)clear, strlen((const char *)clear))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case DONE_TYPE_1:
-		while((CDC_Transmit_FS(Done, strlen((const char *)Done))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)Done, strlen((const char *)Done))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case RUN_CAL_TYPE_TEMP:
-		while((CDC_Transmit_FS(run_cal, strlen((const char *)run_cal))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		while((CDC_Transmit_FS((uint8_t *)run_cal, strlen((const char *)run_cal))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	}
 }
