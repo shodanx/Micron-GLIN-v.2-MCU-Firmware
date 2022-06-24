@@ -5839,82 +5839,81 @@ LOAD c:/st/stm32cubeide_1.8.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000008001aac       0xe0 ./Core/Src/dac_and_dds_func.o
                 0x0000000008001aac                DAC_TEMP_CAL
  .text.DDS_Calculation
-                0x0000000008001b8c      0x274 ./Core/Src/dac_and_dds_func.o
+                0x0000000008001b8c      0x278 ./Core/Src/dac_and_dds_func.o
                 0x0000000008001b8c                DDS_Calculation
  .text.DDS_Init
-                0x0000000008001e00      0x1b8 ./Core/Src/dac_and_dds_func.o
-                0x0000000008001e00                DDS_Init
+                0x0000000008001e04      0x1b8 ./Core/Src/dac_and_dds_func.o
+                0x0000000008001e04                DDS_Init
  .text.DDS_Update
-                0x0000000008001fb8      0x12c ./Core/Src/dac_and_dds_func.o
-                0x0000000008001fb8                DDS_Update
- .text.LcdSend  0x00000000080020e4       0x64 ./Core/Src/display.o
-                0x00000000080020e4                LcdSend
+                0x0000000008001fbc      0x12c ./Core/Src/dac_and_dds_func.o
+                0x0000000008001fbc                DDS_Update
+ .text.LcdSend  0x00000000080020e8       0x64 ./Core/Src/display.o
+                0x00000000080020e8                LcdSend
  .text.LcdUpdate
-                0x0000000008002148       0x74 ./Core/Src/display.o
-                0x0000000008002148                LcdUpdate
+                0x000000000800214c       0x74 ./Core/Src/display.o
+                0x000000000800214c                LcdUpdate
  .text.LcdClear_massive
-                0x00000000080021bc       0x38 ./Core/Src/display.o
-                0x00000000080021bc                LcdClear_massive
+                0x00000000080021c0       0x38 ./Core/Src/display.o
+                0x00000000080021c0                LcdClear_massive
  .text.LcdGotoXYFont
-                0x00000000080021f4       0x38 ./Core/Src/display.o
-                0x00000000080021f4                LcdGotoXYFont
+                0x00000000080021f8       0x38 ./Core/Src/display.o
+                0x00000000080021f8                LcdGotoXYFont
  .text.clean_lcd_buf
-                0x000000000800222c       0x34 ./Core/Src/display.o
-                0x000000000800222c                clean_lcd_buf
- .text.LcdChr   0x0000000008002260       0xa8 ./Core/Src/display.o
-                0x0000000008002260                LcdChr
+                0x0000000008002230       0x34 ./Core/Src/display.o
+                0x0000000008002230                clean_lcd_buf
+ .text.LcdChr   0x0000000008002264       0xa8 ./Core/Src/display.o
+                0x0000000008002264                LcdChr
  .text.LcdString
-                0x0000000008002308       0x68 ./Core/Src/display.o
-                0x0000000008002308                LcdString
- .text.pulse_e  0x0000000008002370       0x24 ./Core/Src/display.o
-                0x0000000008002370                pulse_e
+                0x000000000800230c       0x68 ./Core/Src/display.o
+                0x000000000800230c                LcdString
+ .text.pulse_e  0x0000000008002374       0x24 ./Core/Src/display.o
+                0x0000000008002374                pulse_e
  .text.send_nibble
-                0x0000000008002394       0x9c ./Core/Src/display.o
-                0x0000000008002394                send_nibble
+                0x0000000008002398       0x9c ./Core/Src/display.o
+                0x0000000008002398                send_nibble
  .text.send_data
-                0x0000000008002430       0x2c ./Core/Src/display.o
-                0x0000000008002430                send_data
+                0x0000000008002434       0x2c ./Core/Src/display.o
+                0x0000000008002434                send_data
  .text.send_command
-                0x000000000800245c       0x54 ./Core/Src/display.o
-                0x000000000800245c                send_command
+                0x0000000008002460       0x54 ./Core/Src/display.o
+                0x0000000008002460                send_command
  .text.check_busy_flag
-                0x00000000080024b0       0xa8 ./Core/Src/display.o
-                0x00000000080024b0                check_busy_flag
+                0x00000000080024b4       0xa8 ./Core/Src/display.o
+                0x00000000080024b4                check_busy_flag
  .text.Poweroff_LCD
-                0x0000000008002558       0x24 ./Core/Src/display.o
-                0x0000000008002558                Poweroff_LCD
+                0x000000000800255c       0x24 ./Core/Src/display.o
+                0x000000000800255c                Poweroff_LCD
  .text.Poweron_LCD
-                0x000000000800257c       0x24 ./Core/Src/display.o
-                0x000000000800257c                Poweron_LCD
+                0x0000000008002580       0x24 ./Core/Src/display.o
+                0x0000000008002580                Poweron_LCD
  .text.init_LCD
-                0x00000000080025a0       0xcc ./Core/Src/display.o
-                0x00000000080025a0                init_LCD
+                0x00000000080025a4       0xcc ./Core/Src/display.o
+                0x00000000080025a4                init_LCD
  .text.LcdBarLine
-                0x000000000800266c      0x148 ./Core/Src/display.o
-                0x000000000800266c                LcdBarLine
+                0x0000000008002670      0x148 ./Core/Src/display.o
+                0x0000000008002670                LcdBarLine
  .text.output_state
-                0x00000000080027b4      0x224 ./Core/Src/function.o
-                0x00000000080027b4                output_state
+                0x00000000080027b8      0x224 ./Core/Src/function.o
+                0x00000000080027b8                output_state
  .text.display_screen
-                0x00000000080029d8      0x18c ./Core/Src/function.o
-                0x00000000080029d8                display_screen
+                0x00000000080029dc      0x18c ./Core/Src/function.o
+                0x00000000080029dc                display_screen
  .text.send_answer_to_CDC
-                0x0000000008002b64      0x1a4 ./Core/Src/function.o
-                0x0000000008002b64                send_answer_to_CDC
+                0x0000000008002b68      0x1a4 ./Core/Src/function.o
+                0x0000000008002b68                send_answer_to_CDC
  .text.cmd_SWEEP_START
-                0x0000000008002d08       0x20 ./Core/Src/function.o
-                0x0000000008002d08                cmd_SWEEP_START
+                0x0000000008002d0c       0x20 ./Core/Src/function.o
+                0x0000000008002d0c                cmd_SWEEP_START
  .text.cmd_SWEEP_STOP
-                0x0000000008002d28       0x12 ./Core/Src/function.o
-                0x0000000008002d28                cmd_SWEEP_STOP
- *fill*         0x0000000008002d3a        0x2 
+                0x0000000008002d2c       0x12 ./Core/Src/function.o
+                0x0000000008002d2c                cmd_SWEEP_STOP
+ *fill*         0x0000000008002d3e        0x2 
  .text.cmd_DAC_SET
-                0x0000000008002d3c       0x60 ./Core/Src/function.o
-                0x0000000008002d3c                cmd_DAC_SET
+                0x0000000008002d40       0x60 ./Core/Src/function.o
+                0x0000000008002d40                cmd_DAC_SET
  .text.cmd_SET_OUTPUT_VOLTAGE
-                0x0000000008002d9c      0x228 ./Core/Src/function.o
-                0x0000000008002d9c                cmd_SET_OUTPUT_VOLTAGE
- *fill*         0x0000000008002fc4        0x4 
+                0x0000000008002da0      0x228 ./Core/Src/function.o
+                0x0000000008002da0                cmd_SET_OUTPUT_VOLTAGE
  .text.cmd_SWEEP_RATE
                 0x0000000008002fc8       0x80 ./Core/Src/function.o
                 0x0000000008002fc8                cmd_SWEEP_RATE
@@ -7969,45 +7968,45 @@ LOAD c:/st/stm32cubeide_1.8.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .debug_macro   0x000000000001a2e0       0x1c ./USB_DEVICE/App/usbd_desc.o
  .debug_macro   0x000000000001a2fc      0x406 ./USB_DEVICE/Target/usbd_conf.o
 
-.debug_line     0x0000000000000000    0x201ed
+.debug_line     0x0000000000000000    0x201de
  .debug_line    0x0000000000000000      0x609 ./Circular-buffer/src/circular_buffer.o
- .debug_line    0x0000000000000609      0xce7 ./Core/Src/dac_and_dds_func.o
- .debug_line    0x00000000000012f0     0x11af ./Core/Src/display.o
- .debug_line    0x000000000000249f      0xf7b ./Core/Src/function.o
- .debug_line    0x000000000000341a      0x786 ./Core/Src/gpio.o
- .debug_line    0x0000000000003ba0      0x764 ./Core/Src/i2c.o
- .debug_line    0x0000000000004304     0x10bd ./Core/Src/main.o
- .debug_line    0x00000000000053c1      0x7df ./Core/Src/spi.o
- .debug_line    0x0000000000005ba0      0x701 ./Core/Src/stm32l1xx_hal_msp.o
- .debug_line    0x00000000000062a1      0x84e ./Core/Src/stm32l1xx_it.o
- .debug_line    0x0000000000006aef      0x7ef ./Core/Src/syscalls.o
- .debug_line    0x00000000000072de      0x4e5 ./Core/Src/sysmem.o
- .debug_line    0x00000000000077c3      0x79b ./Core/Src/system_stm32l1xx.o
- .debug_line    0x0000000000007f5e      0x881 ./Core/Src/tim.o
- .debug_line    0x00000000000087df      0xbd4 ./Core/Src/tmp117.o
- .debug_line    0x00000000000093b3       0x87 ./Core/Startup/startup_stm32l152cbux.o
- .debug_line    0x000000000000943a      0x9be ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal.o
- .debug_line    0x0000000000009df8      0xc8b ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_cortex.o
- .debug_line    0x000000000000aa83      0xc08 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_dma.o
- .debug_line    0x000000000000b68b      0x9f4 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash.o
- .debug_line    0x000000000000c07f      0xe02 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash_ex.o
- .debug_line    0x000000000000ce81      0xa10 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_gpio.o
- .debug_line    0x000000000000d891     0x3929 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_i2c.o
- .debug_line    0x00000000000111ba     0x12ac ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_pcd.o
- .debug_line    0x0000000000012466      0x774 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_pcd_ex.o
- .debug_line    0x0000000000012bda      0xec7 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_rcc.o
- .debug_line    0x0000000000013aa1     0x1c50 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_spi.o
- .debug_line    0x00000000000156f1     0x2e6f ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim.o
- .debug_line    0x0000000000018560      0x7cd ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim_ex.o
- .debug_line    0x0000000000018d2d     0x101a ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_usb.o
- .debug_line    0x0000000000019d47      0xd82 ./Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.o
- .debug_line    0x000000000001aac9      0xdfc ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
- .debug_line    0x000000000001b8c5      0xf9b ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
- .debug_line    0x000000000001c860      0xa9a ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
- .debug_line    0x000000000001d2fa      0xa5a ./USB_DEVICE/App/usb_device.o
- .debug_line    0x000000000001dd54      0xb2c ./USB_DEVICE/App/usbd_cdc_if.o
- .debug_line    0x000000000001e880      0xb23 ./USB_DEVICE/App/usbd_desc.o
- .debug_line    0x000000000001f3a3      0xe4a ./USB_DEVICE/Target/usbd_conf.o
+ .debug_line    0x0000000000000609      0xcea ./Core/Src/dac_and_dds_func.o
+ .debug_line    0x00000000000012f3     0x119f ./Core/Src/display.o
+ .debug_line    0x0000000000002492      0xf7b ./Core/Src/function.o
+ .debug_line    0x000000000000340d      0x786 ./Core/Src/gpio.o
+ .debug_line    0x0000000000003b93      0x764 ./Core/Src/i2c.o
+ .debug_line    0x00000000000042f7     0x10bb ./Core/Src/main.o
+ .debug_line    0x00000000000053b2      0x7df ./Core/Src/spi.o
+ .debug_line    0x0000000000005b91      0x701 ./Core/Src/stm32l1xx_hal_msp.o
+ .debug_line    0x0000000000006292      0x84e ./Core/Src/stm32l1xx_it.o
+ .debug_line    0x0000000000006ae0      0x7ef ./Core/Src/syscalls.o
+ .debug_line    0x00000000000072cf      0x4e5 ./Core/Src/sysmem.o
+ .debug_line    0x00000000000077b4      0x79b ./Core/Src/system_stm32l1xx.o
+ .debug_line    0x0000000000007f4f      0x881 ./Core/Src/tim.o
+ .debug_line    0x00000000000087d0      0xbd4 ./Core/Src/tmp117.o
+ .debug_line    0x00000000000093a4       0x87 ./Core/Startup/startup_stm32l152cbux.o
+ .debug_line    0x000000000000942b      0x9be ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal.o
+ .debug_line    0x0000000000009de9      0xc8b ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_cortex.o
+ .debug_line    0x000000000000aa74      0xc08 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_dma.o
+ .debug_line    0x000000000000b67c      0x9f4 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash.o
+ .debug_line    0x000000000000c070      0xe02 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash_ex.o
+ .debug_line    0x000000000000ce72      0xa10 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_gpio.o
+ .debug_line    0x000000000000d882     0x3929 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_i2c.o
+ .debug_line    0x00000000000111ab     0x12ac ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_pcd.o
+ .debug_line    0x0000000000012457      0x774 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_pcd_ex.o
+ .debug_line    0x0000000000012bcb      0xec7 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_rcc.o
+ .debug_line    0x0000000000013a92     0x1c50 ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_spi.o
+ .debug_line    0x00000000000156e2     0x2e6f ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim.o
+ .debug_line    0x0000000000018551      0x7cd ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim_ex.o
+ .debug_line    0x0000000000018d1e     0x101a ./Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_usb.o
+ .debug_line    0x0000000000019d38      0xd82 ./Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.o
+ .debug_line    0x000000000001aaba      0xdfc ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_line    0x000000000001b8b6      0xf9b ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ .debug_line    0x000000000001c851      0xa9a ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
+ .debug_line    0x000000000001d2eb      0xa5a ./USB_DEVICE/App/usb_device.o
+ .debug_line    0x000000000001dd45      0xb2c ./USB_DEVICE/App/usbd_cdc_if.o
+ .debug_line    0x000000000001e871      0xb23 ./USB_DEVICE/App/usbd_desc.o
+ .debug_line    0x000000000001f394      0xe4a ./USB_DEVICE/Target/usbd_conf.o
 
 .debug_str      0x0000000000000000    0x88131
  .debug_str     0x0000000000000000     0x6eaa ./Circular-buffer/src/circular_buffer.o

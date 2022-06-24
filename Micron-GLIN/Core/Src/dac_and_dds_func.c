@@ -225,7 +225,7 @@ void DDS_Calculation(void)
 	float corr_coeff;
 	float dac_tmp=DAC_code;
 	float second_left;
-	uint32_t codes_left;
+	uint32_t codes_left=0;
 
 	// Linearity correction
 	corr_coeff=corr_coeff_1*dac_tmp*dac_tmp;
@@ -377,13 +377,13 @@ void DDS_Update(void)
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
 
-/*	// Control DDS (D15=1, D14=1)
+	/*	// Control DDS (D15=1, D14=1)
 	DDS_tx_buffer[0]=0x9000; // Latch to output by synchonizing data. In this case, the SELSRC bit is again set to 1 using Command Bits [1:0] for C15 and C14.
 
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi2,(uint8_t *)DDS_tx_buffer,1,5);
 	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-*/
+	 */
 }
 
 

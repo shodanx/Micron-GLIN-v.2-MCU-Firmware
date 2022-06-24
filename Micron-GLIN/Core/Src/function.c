@@ -79,47 +79,47 @@ void output_state(uint8_t type)
 	{
 	//----------------------------------------------------------//
 	case Output_off_STATE:
-	  Relay_control(0,0); // set all coils off
-	  Relay_control(1,0); // x1 mode
-	  Relay_control(2,0); // x2/x4 mode
-	  Relay_control(3,0); // Output Enable
-	  HAL_Delay(relay_settling_time_ms); // wait
-	  Relay_control(0,0); // set all coils off
-	  Current_output_status=Output_off_STATE;
-	  break;
+		Relay_control(0,0); // set all coils off
+		Relay_control(1,0); // x1 mode
+		Relay_control(2,0); // x2/x4 mode
+		Relay_control(3,0); // Output Enable
+		HAL_Delay(relay_settling_time_ms); // wait
+		Relay_control(0,0); // set all coils off
+		Current_output_status=Output_off_STATE;
+		break;
 
 	case Output_x1_STATE:
-	  Relay_control(0,0); // set all coils off
-	  Relay_control(1,0); // x1 mode
-	  Relay_control(2,0); // x2/x4 mode
-	  Relay_control(3,1); // Output Enable
-	  HAL_Delay(relay_settling_time_ms); // wait
-	  Relay_control(0,0); // set all coils off
-	  Current_output_status=Output_x1_STATE;
-	  DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
-	  break;
+		Relay_control(0,0); // set all coils off
+		Relay_control(1,0); // x1 mode
+		Relay_control(2,0); // x2/x4 mode
+		Relay_control(3,1); // Output Enable
+		HAL_Delay(relay_settling_time_ms); // wait
+		Relay_control(0,0); // set all coils off
+		Current_output_status=Output_x1_STATE;
+		DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
+		break;
 
 	case Output_x2_STATE:
-	  Relay_control(0,0); // set all coils off
-	  Relay_control(1,1); // x1 mode
-	  Relay_control(2,1); // x2/x4 mode
-	  Relay_control(3,1); // Output Enable
-	  HAL_Delay(relay_settling_time_ms); // wait
-	  Relay_control(0,0); // set all coils off
-	  Current_output_status=Output_x2_STATE;
-	  DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff;
-	  break;
+		Relay_control(0,0); // set all coils off
+		Relay_control(1,1); // x1 mode
+		Relay_control(2,1); // x2/x4 mode
+		Relay_control(3,1); // Output Enable
+		HAL_Delay(relay_settling_time_ms); // wait
+		Relay_control(0,0); // set all coils off
+		Current_output_status=Output_x2_STATE;
+		DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff;
+		break;
 
 	case Output_x4_STATE:
-	  Relay_control(0,0); // set all coils off
-	  Relay_control(1,1); // x1 mode
-	  Relay_control(2,0); // x2/x4 mode
-	  Relay_control(3,1); // Output Enable
-	  HAL_Delay(relay_settling_time_ms); // wait
-	  Relay_control(0,0); // set all coils off
-	  Current_output_status=Output_x4_STATE;
-	  DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff;
-	  break;
+		Relay_control(0,0); // set all coils off
+		Relay_control(1,1); // x1 mode
+		Relay_control(2,0); // x2/x4 mode
+		Relay_control(3,1); // Output Enable
+		HAL_Delay(relay_settling_time_ms); // wait
+		Relay_control(0,0); // set all coils off
+		Current_output_status=Output_x4_STATE;
+		DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff;
+		break;
 
 	case Output_auto_STATE:
 		if((cal_DAC_up_voltage-cal_DAC_down_voltage)/DAC_target_speed > 600)
@@ -135,7 +135,7 @@ void output_state(uint8_t type)
 				output_state(Output_x4_STATE);
 
 		break;
-}
+	}
 }
 //==============================================================================================
 
@@ -182,21 +182,21 @@ void display_screen(uint8_t type)
 			}
 		}
 		break;
-	//----------------------------------------------------------//
+		//----------------------------------------------------------//
 	case Hello_SCREEN:
 		sprintf(lcd_buf,"Hello AmpNuts!");
 		LcdString(1, 1);
 		sprintf(lcd_buf,"I`m Micron-GLIN");
 		LcdString(1, 2);
 		break;
-	//----------------------------------------------------------//
+		//----------------------------------------------------------//
 	case Warm_up_SCREEN:
 		sprintf(lcd_buf,"need time to");
 		LcdString(1, 1);
 		sprintf(lcd_buf,"warm-up my refs");
 		LcdString(1, 2);
 		break;
-	//----------------------------------------------------------//
+		//----------------------------------------------------------//
 	case Ready_SCREEN:
 		sprintf(lcd_buf,"I`m ready...");
 		LcdString(1, 1);
@@ -328,25 +328,25 @@ FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 //==============================================================================================
 FunctionalState cmd_SWEEP_RATE(float rate)
 {
-		if(rate<0.0009 || rate>1.1) // V/s
+	if(rate<0.0009 || rate>1.1) // V/s
+	{
+		return 0;
+	}
+	else
+	{
+		DAC_target_speed=rate;
+		if(cfg.LDACMODE==0)
 		{
-			return 0;
+			CPLD_control(CPLD_OFF_STATE);
 		}
 		else
 		{
-			DAC_target_speed=rate;
-			if(cfg.LDACMODE==0)
-			{
-				CPLD_control(CPLD_OFF_STATE);
-			}
-			else
-			{
-				CPLD_control(CPLD_ON_STATE);
-			}
-
-			DDS_Calculation();
-			return 1;
+			CPLD_control(CPLD_ON_STATE);
 		}
+
+		DDS_Calculation();
+		return 1;
+	}
 }
 //==============================================================================================
 
@@ -436,28 +436,28 @@ void load_data_from_EEPROM(void)
 
 float binary_to_float(uint32_t a)
 {
-	    int * p;
-	    float out=0;
+	int * p;
+	float out=0;
 
-	    p = &out;
-	    (*p)=a;
-	    return out;
+	p = &out;
+	(*p)=a;
+	return out;
 }
 
 
 uint32_t float_to_binary(float a)
 {
-	    int i;
-	    int * p;
-	    uint32_t out=0;
+	int i;
+	int * p;
+	uint32_t out=0;
 
-	    p = &a;
-	    for (i = sizeof(int) * 8 - 1; i >= 0; i--)
-	    {
-	    	out+=((*p) >> i & 1)<<i;
-	    }
+	p = &a;
+	for (i = sizeof(int) * 8 - 1; i >= 0; i--)
+	{
+		out+=((*p) >> i & 1)<<i;
+	}
 
-	    return out;
+	return out;
 }
 #pragma GCC pop_options
 #pragma GCC diagnostic pop
