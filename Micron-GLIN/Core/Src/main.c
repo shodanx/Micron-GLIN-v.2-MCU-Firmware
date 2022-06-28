@@ -368,7 +368,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //==============================================================================================
 __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == GPIO_PIN_9) // CPU_IRQ signal from Timebase CPLD
+	if(GPIO_Pin == CPU_IRQ_Pin) // CPU_IRQ signal from Timebase CPLD
 	{
 		DAC_Write_FAST(); // Сначала стреляем, а потом уже разговариваем
 		Ramp_dac_step_complete=1;
@@ -382,8 +382,8 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_code+=DDS_target_multipiller;
 			} else  {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
-				DAC_SendInit();
-				send_answer_to_CDC(DONE_TYPE_1);
+				//DAC_SendInit();
+				//send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
 			break;
@@ -394,8 +394,8 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_code-=DDS_target_multipiller;
 			} else {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
-				DAC_SendInit();
-				send_answer_to_CDC(DONE_TYPE_1);
+				//DAC_SendInit();
+				//send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
 			break;
@@ -422,7 +422,7 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		DAC_tx_tmp_buffer[1]=(DAC_tx_buffer & 0x0000FFFF);
 	}
 
-	if((GPIO_Pin == GPIO_PIN_8) || (GPIO_Pin == GPIO_PIN_13))Display_need_wakeup=1;
+	if((GPIO_Pin == Start_button_Pin) || (GPIO_Pin == Encode_Push_Pin))Display_need_wakeup=1;
 }
 
 void Parsing_USB_command(void)

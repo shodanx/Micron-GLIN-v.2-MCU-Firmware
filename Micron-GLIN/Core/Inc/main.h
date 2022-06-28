@@ -150,6 +150,9 @@ void Error_Handler(void);
 #define Encode_Push_Pin GPIO_PIN_8
 #define Encode_Push_GPIO_Port GPIOA
 #define Encode_Push_EXTI_IRQn EXTI9_5_IRQn
+#define CPU_IRQ_Pin GPIO_PIN_9
+#define CPU_IRQ_GPIO_Port GPIOA
+#define CPU_IRQ_EXTI_IRQn EXTI9_5_IRQn
 #define DAC_ALARM_Pin GPIO_PIN_10
 #define DAC_ALARM_GPIO_Port GPIOA
 #define DAC_CLR_Pin GPIO_PIN_15
