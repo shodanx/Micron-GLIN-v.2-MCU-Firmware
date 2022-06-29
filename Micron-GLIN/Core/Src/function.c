@@ -34,6 +34,7 @@ extern float DAC_target_speed;
 
 extern uint8_t eta_hours,eta_minute,eta_second;
 
+float C_value[C_value_max_count];
 
 volatile FunctionalState USB_CDC_End_Line_Received;
 uint8_t command_buffer[31];
@@ -415,6 +416,7 @@ FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 //==============================================================================================
 void load_data_from_EEPROM(void)
 {
+	uint32_t addr_i,addr_hex;
 	cal_DAC_up_voltage=binary_to_float(EEPROM_read(cal_DAC_up_voltage_EEPROM_ADDRESS)); // Read top voltage calibration from EEPROM in uV value
 	cal_DAC_down_voltage=binary_to_float(EEPROM_read(cal_DAC_down_voltage_EEPROM_ADDRESS)); // Read top voltage calibration from EEPROM in uV value
 	DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
@@ -424,6 +426,25 @@ void load_data_from_EEPROM(void)
 	corr_coeff_3=binary_to_float(EEPROM_read(corr_coeff_3_EEPROM_ADDRESS));
 	gain_x2_coeff=binary_to_float(EEPROM_read(gain_x2_EEPROM_ADDRESS));
 	gain_x4_coeff=binary_to_float(EEPROM_read(gain_x4_EEPROM_ADDRESS));
+
+	for(addr_i=0; addr_i<C_value_max_count; addr_i++)
+	{
+		addr_hex=C_value_base_EEPROM_ADDRESS+(0x08*addr_i);
+		C_value[addr_i]=binary_to_float(EEPROM_read(addr_hex));
+	}
+}
+//==============================================================================================
+
+
+//==============================================================================================
+void write_c_value_to_EEPROM(uint32_t addr_i, float value)
+{
+	uint32_t addr_hex=C_value_base_EEPROM_ADDRESS+(0x08*addr_i);
+
+	if(addr_i>=C_value_max_count)return;
+
+	C_value[addr_i]=value;
+	EEPROM_write(addr_hex,float_to_binary(value));
 }
 //==============================================================================================
 

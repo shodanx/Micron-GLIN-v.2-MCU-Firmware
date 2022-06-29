@@ -69,3 +69,6 @@ local.properties
 .sts4-cache/
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse
+/Micron-GLIN/Debug/Core/Src/*.o
+*.o
+*.elf

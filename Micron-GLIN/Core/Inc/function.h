@@ -59,12 +59,14 @@
 #define DATA_EEPROM_PAGE_SIZE      			0x8
 
 #define cal_DAC_up_voltage_EEPROM_ADDRESS 	0x0000
-#define cal_DAC_down_voltage_EEPROM_ADDRESS 0x0008
-#define corr_coeff_1_EEPROM_ADDRESS 		0x0010
-#define corr_coeff_2_EEPROM_ADDRESS 		0x0018
-#define corr_coeff_3_EEPROM_ADDRESS 		0x0020
-#define gain_x2_EEPROM_ADDRESS				0x0028
-#define gain_x4_EEPROM_ADDRESS				0x0030
+#define cal_DAC_down_voltage_EEPROM_ADDRESS cal_DAC_up_voltage_EEPROM_ADDRESS+0x08
+#define corr_coeff_1_EEPROM_ADDRESS 		cal_DAC_down_voltage_EEPROM_ADDRESS+0x08
+#define corr_coeff_2_EEPROM_ADDRESS 		corr_coeff_1_EEPROM_ADDRESS+0x08
+#define corr_coeff_3_EEPROM_ADDRESS 		corr_coeff_2_EEPROM_ADDRESS+0x08
+#define gain_x2_EEPROM_ADDRESS				corr_coeff_3_EEPROM_ADDRESS+0x08
+#define gain_x4_EEPROM_ADDRESS				gain_x2_EEPROM_ADDRESS+0x08
+#define C_value_base_EEPROM_ADDRESS			gain_x4_EEPROM_ADDRESS+0x08
+#define C_value_max_count					10
 
 void send_answer_to_CDC(uint8_t);
 void cmd_SWEEP_START();
@@ -86,5 +88,6 @@ uint32_t EEPROM_read(uint32_t);
 void EEPROM_write(uint32_t, uint32_t);
 float binary_to_float(uint32_t);
 void load_data_from_EEPROM(void);
+void write_c_value_to_EEPROM(uint32_t, float);
 
 #endif /* INC_FUNCTION_H_ */

@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #include "display.h"
 #include "tmp117.h"
 #include "circular_buffer.h"
@@ -84,6 +83,8 @@ extern float corr_coeff_2;
 extern float corr_coeff_3;
 extern float gain_x2_coeff;
 extern float gain_x4_coeff;
+
+extern float C_value[C_value_max_count];
 
 char large_string_buffer[60];
 
@@ -427,36 +428,29 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void Parsing_USB_command(void)
 {
-	char *found;
+	//char *found;
 	char decoded_string_1[31];
 	char decoded_string_2[31];
+	int num_of_cap;
+	float f_value;
 	uint8_t cdc_counter=0;
 
-	found = strtok((char *)command_buffer," ");
-	if(found!=NULL)
-	{
-		strcpy(decoded_string_1,found);
-	}
-	else
+	if(sscanf((char *)command_buffer,"%s", decoded_string_1)!=1)
 	{
 		send_answer_to_CDC(ERROR_TYPE_1);
 		return;
 	}
 
-	found = strtok(NULL,"\r");
-	if(found!=NULL)
-	{
-		strcpy(decoded_string_2,found);
-		for(int i=0;i<strlen(decoded_string_2);i++)if(decoded_string_2[i]==' ')decoded_string_2[i]='\0';
-	}
-	else
-	{
-		send_answer_to_CDC(ERROR_TYPE_1);
-		return;
-	}
+
 	// ==== SWEEP command ====
 	if(!(strcmp(decoded_string_1,"SWEEP")))
 	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
 		if(!(strcmp(decoded_string_2,"START")))
 		{
 			cmd_SWEEP_START();
@@ -482,6 +476,12 @@ void Parsing_USB_command(void)
 	// ==== DAC_SET command ====
 	if(!(strcmp(decoded_string_1,"DAC_SET")))
 	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
 		if(!(strcmp(decoded_string_2,"TOP"))){
 			cmd_DAC_SET(DAC_CODE_TOP);
 			send_answer_to_CDC(OK_TYPE_2);
@@ -496,7 +496,13 @@ void Parsing_USB_command(void)
 			}
 			else
 			{
-				if(cmd_SET_OUTPUT_VOLTAGE(atof(decoded_string_2)))
+				if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+				{
+					send_answer_to_CDC(ERROR_TYPE_2);
+					return;
+				}
+
+				if(cmd_SET_OUTPUT_VOLTAGE(f_value))
 				{
 					send_answer_to_CDC(OK_TYPE_2);
 					return;
@@ -515,6 +521,12 @@ void Parsing_USB_command(void)
 	// ==== OUTPUT command ====
 	if(!(strcmp(decoded_string_1,"OUTPUT")))
 	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
 		if(!(strcmp(decoded_string_2,"OFF"))){
 			output_state(Output_off_STATE);
 			send_answer_to_CDC(OK_TYPE_2);
@@ -554,6 +566,12 @@ void Parsing_USB_command(void)
 	// ==== DAC_CAL_TEMP command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_TEMP")))
 	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
 		if(!(strcmp(decoded_string_2,"START"))){
 			send_answer_to_CDC(RUN_CAL_TYPE_TEMP);
 			cmd_CAL(DAC_CAL_TEMP,NONE);
@@ -570,7 +588,13 @@ void Parsing_USB_command(void)
 	// ==== DAC_CAL_POLY_A command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_POLY_A")))
 	{
-		cmd_CAL(DAC_CAL_POLY_A,atof(decoded_string_2));
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		cmd_CAL(DAC_CAL_POLY_A,f_value);
 		send_answer_to_CDC(OK_TYPE_2);
 		return;
 	}
@@ -578,7 +602,13 @@ void Parsing_USB_command(void)
 	// ==== DAC_CAL_POLY_B command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_POLY_B")))
 	{
-		cmd_CAL(DAC_CAL_POLY_B,atof(decoded_string_2));
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		cmd_CAL(DAC_CAL_POLY_B,f_value);
 		send_answer_to_CDC(OK_TYPE_2);
 		return;
 	}
@@ -586,7 +616,13 @@ void Parsing_USB_command(void)
 	// ==== DAC_CAL_POLY_C command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_POLY_C")))
 	{
-		cmd_CAL(DAC_CAL_POLY_C,atof(decoded_string_2));
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		cmd_CAL(DAC_CAL_POLY_C,f_value);
 		send_answer_to_CDC(OK_TYPE_2);
 		return;
 	}
@@ -594,7 +630,13 @@ void Parsing_USB_command(void)
 	// ==== GAIN_X2_CAL command ====
 	if(!(strcmp(decoded_string_1,"GAIN_X2_CAL")))
 	{
-		if(cmd_CAL(GAIN_X2_CAL,atof(decoded_string_2)))
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(cmd_CAL(GAIN_X2_CAL,f_value))
 		{
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
@@ -609,7 +651,13 @@ void Parsing_USB_command(void)
 	// ==== GAIN_X4_CAL command ====
 	if(!(strcmp(decoded_string_1,"GAIN_X4_CAL")))
 	{
-		if(cmd_CAL(GAIN_X4_CAL,atof(decoded_string_2)))
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(cmd_CAL(GAIN_X4_CAL,f_value))
 		{
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
@@ -625,7 +673,13 @@ void Parsing_USB_command(void)
 	// ==== DAC_CAL_TOP command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_TOP")))
 	{
-		if(cmd_CAL(DAC_CAL_TOP,atof(decoded_string_2)))
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(cmd_CAL(DAC_CAL_TOP,f_value))
 		{
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
@@ -641,7 +695,13 @@ void Parsing_USB_command(void)
 	// ==== DAC_CAL_DOWN command ====
 	if(!(strcmp(decoded_string_1,"DAC_CAL_DOWN")))
 	{
-		if(cmd_CAL(DAC_CAL_DOWN,atof(decoded_string_2)))
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(cmd_CAL(DAC_CAL_DOWN,f_value))
 		{
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
@@ -653,11 +713,30 @@ void Parsing_USB_command(void)
 		}
 	}
 
+	// ==== GAIN_X2_CAL command ====
+	if(!(strcmp(decoded_string_1,"CAL_C_VALUE")))
+	{
+		if(sscanf((char *)command_buffer,"%s %d %f", decoded_string_1, &num_of_cap, &f_value)!=3)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+		write_c_value_to_EEPROM(num_of_cap, f_value);
+		send_answer_to_CDC(OK_TYPE_2);
+		return;
+	}
+
 
 	// ==== SWEEP_RATE command ====
 	if(!(strcmp(decoded_string_1,"SWEEP_RATE")))
 	{
-		if(cmd_SWEEP_RATE(atof(decoded_string_2)))
+		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(cmd_SWEEP_RATE(f_value))
 		{
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
@@ -672,6 +751,13 @@ void Parsing_USB_command(void)
 	// ==== SHOW command ====
 	if(!(strcmp(decoded_string_1,"SHOW")))
 	{
+
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
 		if(!(strcmp(decoded_string_2,"INFO"))){
 			sprintf((char *)large_string_buffer,"\n\rDAC 0xFFFFF voltage calibration constant: %1.6E\n\r",cal_DAC_up_voltage);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"DAC 0x00000 voltage calibration constant: %1.6E\n\r",cal_DAC_down_voltage);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
@@ -679,8 +765,12 @@ void Parsing_USB_command(void)
 			sprintf((char *)large_string_buffer,"Linearity correction B: %1.6E\n\r",corr_coeff_2);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"Linearity correction C: %1.6E\n\r",corr_coeff_3);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"LT5400 gain X2 correction: %1.6E\n\r",gain_x2_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
-			sprintf((char *)large_string_buffer,"LT5400 gain X4 correction: %1.6E\n\r\n\r",gain_x4_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
-			sprintf((char *)large_string_buffer,"DAC code: 0x%x\n\r",(unsigned int)DAC_code);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+			sprintf((char *)large_string_buffer,"LT5400 gain X4 correction: %1.6E\n\r",gain_x4_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+			for(uint8_t i=0;i<C_value_max_count;i++)
+			{
+				sprintf((char *)large_string_buffer,"C%d capacitance: %1.6EpF\n\r",(int)i,C_value[i]);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+			}
+			sprintf((char *)large_string_buffer,"\n\rDAC code: 0x%x\n\r",(unsigned int)DAC_code);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"DDS FTW: 0x%x\n\r",(unsigned int)DDS_FTW);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"CPLD control word: 0x%x\n\r",CPLD_WORD);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"Output mode: 0x%x\n\r",Current_output_status);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
@@ -698,6 +788,12 @@ void Parsing_USB_command(void)
 	// ==== SWEEP_DIRECTION command ====
 	if(!(strcmp(decoded_string_1,"SWEEP_DIRECTION")))
 	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
 		if(!(strcmp(decoded_string_2,"UP"))){
 			DAC_code_direction=DIRECTION_UP_STATE;
 			send_answer_to_CDC(OK_TYPE_2);
