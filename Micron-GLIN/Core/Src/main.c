@@ -103,7 +103,15 @@ uint8_t CPLD_WORD;
 float DDS_FTW=0;
 float DDS_target_frequecny;
 float DAC_target_speed;
+float amp_target_speed=1E-12;
+float ramp_target_speed=0.1;
 uint32_t DDS_target_multipiller=1;
+
+uint8_t mode=dU_dt_SCREEN;
+
+float Current_flow=1E-12;
+uint8_t C_ref;
+float Voltage;
 
 float DDS_clock_frequecny=1E7;
 float DAC_fullrange_voltage;
@@ -121,6 +129,8 @@ FunctionalState Display_status=0;
 FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
 FunctionalState Ramp_dac_step_complete=0;
+FunctionalState CAL_STATE=LOCK_STATE;
+FunctionalState SWEEP_MODE=DVDT_STATE;
 
 /* USER CODE END PV */
 
@@ -253,11 +263,36 @@ int main(void)
 				Ramp_dac_step_complete=0;
 			}
 			DDS_Calculation();
+			//Recalculate_ramp_speed(SWEEP_MODE);
 
 		}
 		if(Need_update_Display && Display_status)
 		{
-			display_screen(dU_dt_SCREEN);
+			switch(mode)
+			{
+			//----------------------------------------------------------//
+			case dU_dt_SCREEN:
+				display_screen(dU_dt_SCREEN);
+			break;
+			case AMP_SCREEN:
+				display_screen(AMP_SCREEN);
+			break;
+			case VOLT_SCREEN:
+				display_screen(VOLT_SCREEN);
+			break;
+			}
+
+
+
+/*			if(SWEEP_MODE==DVDT_STATE)
+			{
+				display_screen(dU_dt_SCREEN);
+			}
+			else
+			{
+				display_screen(AMP_SCREEN);
+			}
+*/
 			LcdUpdate();
 			LcdClear_massive();
 		}
@@ -441,7 +476,6 @@ void Parsing_USB_command(void)
 		return;
 	}
 
-
 	// ==== SWEEP command ====
 	if(!(strcmp(decoded_string_1,"SWEEP")))
 	{
@@ -454,6 +488,7 @@ void Parsing_USB_command(void)
 		if(!(strcmp(decoded_string_2,"START")))
 		{
 			cmd_SWEEP_START();
+			mode=dU_dt_SCREEN;
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
 		}
@@ -462,6 +497,7 @@ void Parsing_USB_command(void)
 			if(!(strcmp(decoded_string_2,"STOP")))
 			{
 				cmd_SWEEP_STOP();
+				mode=dU_dt_SCREEN;
 				send_answer_to_CDC(OK_TYPE_2);
 				return;
 			}
@@ -504,6 +540,7 @@ void Parsing_USB_command(void)
 
 				if(cmd_SET_OUTPUT_VOLTAGE(f_value))
 				{
+					mode=VOLT_SCREEN;
 					send_answer_to_CDC(OK_TYPE_2);
 					return;
 				}
@@ -559,6 +596,67 @@ void Parsing_USB_command(void)
 						return;
 					}
 				}
+			}
+		}
+	}
+
+	// ==== SWEEP_MODE command ====
+	if(!(strcmp(decoded_string_1,"SWEEP_MODE")))
+	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(!(strcmp(decoded_string_2,"DVDT"))){
+			mode=dU_dt_SCREEN;
+			//Recalculate_ramp_speed(DVDT_STATE);
+			send_answer_to_CDC(OK_TYPE_2);
+			return;
+		}
+		else
+		{
+			if(!(strcmp(decoded_string_2,"AMP"))){
+				mode=AMP_SCREEN;
+				//Recalculate_ramp_speed(AMP_STATE);
+				send_answer_to_CDC(OK_TYPE_2);
+				return;
+			}
+			else
+			{
+				send_answer_to_CDC(ERROR_TYPE_2);
+				return;
+			}
+		}
+	}
+
+
+	// ==== CAL_STATE command ====
+	if(!(strcmp(decoded_string_1,"CAL_STATE")))
+	{
+		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
+
+		if(!(strcmp(decoded_string_2,"UNLOCK"))){
+			CAL_STATE=UNLOCK_STATE;
+			send_answer_to_CDC(OK_TYPE_2);
+			return;
+		}
+		else
+		{
+			if(!(strcmp(decoded_string_2,"LOCK"))){
+				CAL_STATE=LOCK_STATE;
+				send_answer_to_CDC(OK_TYPE_2);
+				return;
+			}
+			else
+			{
+				send_answer_to_CDC(ERROR_TYPE_2);
+				return;
 			}
 		}
 	}
@@ -713,7 +811,7 @@ void Parsing_USB_command(void)
 		}
 	}
 
-	// ==== GAIN_X2_CAL command ====
+	// ==== CAL_C_VALUE command ====
 	if(!(strcmp(decoded_string_1,"CAL_C_VALUE")))
 	{
 		if(sscanf((char *)command_buffer,"%s %d %f", decoded_string_1, &num_of_cap, &f_value)!=3)
@@ -721,9 +819,17 @@ void Parsing_USB_command(void)
 			send_answer_to_CDC(ERROR_TYPE_2);
 			return;
 		}
-		write_c_value_to_EEPROM(num_of_cap, f_value);
-		send_answer_to_CDC(OK_TYPE_2);
-		return;
+		if(CAL_STATE!=LOCK_STATE)
+		{
+			write_c_value_to_EEPROM(num_of_cap, f_value);
+			send_answer_to_CDC(OK_TYPE_2);
+			return;
+		}
+		else
+		{
+			send_answer_to_CDC(ERROR_TYPE_2);
+			return;
+		}
 	}
 
 

@@ -45,10 +45,22 @@
 #define DIRECTION_UP_STATE		1
 #define DIRECTION_CYCLE_STATE	2
 
+#define UNLOCK_STATE		0
+#define LOCK_STATE			1
+
+#define DVDT_STATE			0
+#define AMP_STATE			1
+
 #define dU_dt_SCREEN		0
 #define Hello_SCREEN		1
 #define Warm_up_SCREEN		2
 #define Ready_SCREEN		3
+#define AMP_SCREEN			4
+#define VOLT_SCREEN			5
+
+#define ret_ERROR	0
+#define ret_OK		1
+
 
 #define DAC_CODE_TOP	0xFFFFF
 #define DAC_CODE_DOWN	0x0
@@ -80,6 +92,7 @@ FunctionalState cmd_CAL(uint8_t, float);
 void display_screen(uint8_t);
 void output_state(uint8_t);
 
+FunctionalState Recalculate_ramp_speed(uint8_t, float);
 
 uint32_t float_to_binary(float);
 float binary_to_float(uint32_t);

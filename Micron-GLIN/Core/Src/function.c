@@ -31,10 +31,21 @@ extern uint8_t Current_output_status;
 
 extern uint32_t DAC_code;
 extern float DAC_target_speed;
+extern float amp_target_speed;
+extern float ramp_target_speed;
 
+extern uint8_t C_ref;
+extern float Voltage;
+
+extern FunctionalState CAL_STATE;
+extern FunctionalState SWEEP_MODE;
 extern uint8_t eta_hours,eta_minute,eta_second;
 
+extern float Current_flow;
+
 float C_value[C_value_max_count];
+
+float dac_resolution;
 
 volatile FunctionalState USB_CDC_End_Line_Received;
 uint8_t command_buffer[31];
@@ -49,12 +60,15 @@ const uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"\n\r"
 		"Usage:\n\r"
 		"SWEEP START/STOP              - control sweep cycle\n\r"
-		"SWEEP_RATE 1.0E-3             - set dv/dt speed (range 1...0.001)\n\r"
+		"SWEEP_RATE 1.23456E-3         - set dv/dt speed (range 1...0.001V/s) or current through capacitance directly in ampere\n\r"
+		"SWEEP_MODE DVDT/AMP           - switch between dv/dt or ampere mode\n\r"
 		"SWEEP_DIRECTION UP/DOWN/CYCLE - set dv/dt direction(increase, decrease or cycle)\n\r"
+		"CAP_SET 1                     - active reference capacitor\n\r"
 		"DAC_SET TOP/DOWN/voltage      - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
-		"OUTPUT OFF/X1/X2/X4           - set output mode\n\r"
+		"OUTPUT OFF/X1/X2/X4           - output mode\n\r"
 		"SHOW INFO                     - show calibration constant and operational data\n\r"
 		"\n\r"
+		"CAL_STATE LOCK/UNLOCK       - Lock or unlock calibration\n\r"
 		"DAC_CAL_TOP 10.01234        - set maximum positive DAC voltage\n\r"
 		"DAC_CAL_DOWN -9.99876       - set maximum negative DAC voltage\n\r"
 		"DAC_CAL_TEMP START          - start DAC temperature calibration cycle\n\r"
@@ -63,6 +77,7 @@ const uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"DAC_CAL_POLY_C 1.000056E+00 - set Linearity correction\n\r"
 		"GAIN_X2_CAL 2.001234        - set LT5400 x2 gain\n\r"
 		"GAIN_X4_CAL 4.001234        - set LT5400 x4 gain\n\r"
+		"CAL_C_VALUE 2 1.84611E+1    - set capacitance of reference cap\n\r"
 		"\n\r"
 		"\n\r"
 		"Enter command: ";
@@ -148,7 +163,7 @@ void display_screen(uint8_t type)
 	switch(type)
 	{
 	//----------------------------------------------------------//
-	case dU_dt_SCREEN:
+	case AMP_SCREEN:
 		if(DAC_code_direction==DIRECTION_UP_STATE)
 		{
 			sign='+';
@@ -161,7 +176,7 @@ void display_screen(uint8_t type)
 			sign='*';
 		}
 
-		sprintf(lcd_buf,"' %c%1.4EV/s",sign, DAC_target_speed);
+		sprintf(lcd_buf,"I %c%1.4EA",sign, amp_target_speed);
 		LcdString(1, 1);
 
 		if(cfg.LDACMODE==1){
@@ -183,7 +198,73 @@ void display_screen(uint8_t type)
 			}
 		}
 		break;
-		//----------------------------------------------------------//
+
+	//----------------------------------------------------------//
+	case VOLT_SCREEN:
+
+		if(Current_output_status==Output_x4_STATE)sprintf(lcd_buf,"Vout %2.5fV",(cal_DAC_down_voltage+(DAC_code*dac_resolution))*gain_x4_coeff);
+		if(Current_output_status==Output_x2_STATE)sprintf(lcd_buf,"Vout %2.5fV",(cal_DAC_down_voltage+(DAC_code*dac_resolution))*gain_x2_coeff);
+		if(Current_output_status==Output_x1_STATE)sprintf(lcd_buf,"Vout %2.5fV",(cal_DAC_down_voltage+(DAC_code*dac_resolution)));
+		if(Current_output_status==Output_off_STATE)sprintf(lcd_buf,"Vout %2.5fV",Voltage);
+		LcdString(1, 1);
+		if(Current_output_status==Output_off_STATE)
+		{
+			sprintf(lcd_buf,"OUTPUT DISABLED");
+			LcdString(1, 2);
+		}
+		if(Current_output_status==Output_x1_STATE)
+		{
+			sprintf(lcd_buf,"X1 MODE");
+			LcdString(1, 2);
+		}
+		if(Current_output_status==Output_x2_STATE)
+		{
+			sprintf(lcd_buf,"X2 MODE");
+			LcdString(1, 2);
+		}
+		if(Current_output_status==Output_x4_STATE)
+		{
+			sprintf(lcd_buf,"X4 MODE");
+			LcdString(1, 2);
+		}
+		break;
+	//----------------------------------------------------------//
+		case dU_dt_SCREEN:
+			if(DAC_code_direction==DIRECTION_UP_STATE)
+			{
+				sign='+';
+			}
+			else if(DAC_code_direction==DIRECTION_DOWN_STATE)
+			{
+				sign='-';
+			} else
+			{
+				sign='*';
+			}
+
+			sprintf(lcd_buf,"' %c%1.4EV/s",sign, ramp_target_speed);
+			LcdString(1, 1);
+
+			if(cfg.LDACMODE==1){
+				sprintf(lcd_buf,"ARM      %01u:%02u:%02u",eta_hours,eta_minute,eta_second);
+				LcdString(1, 2);
+				LcdBarLine(DAC_code);
+			}
+			else
+			{
+				if(Current_output_status==Output_off_STATE)
+				{
+					sprintf(lcd_buf,"OUTPUT DISABLED");
+					LcdString(1, 2);
+				}
+				else
+				{
+					sprintf(lcd_buf,"READY TO GO");
+					LcdString(1, 2);
+				}
+			}
+			break;
+			//----------------------------------------------------------//
 	case Hello_SCREEN:
 		sprintf(lcd_buf,"Hello AmpNuts!");
 		LcdString(1, 1);
@@ -294,36 +375,71 @@ void cmd_DAC_SET(uint32_t code)
 //==============================================================================================
 FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 {
-	float dac_resolution;
-
 	if(volt>=cal_DAC_down_voltage && volt<=cal_DAC_up_voltage)
 	{
 		if(Current_output_status!=Output_x1_STATE)output_state(Output_x1_STATE);
 		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
 		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage)/dac_resolution);
 		cmd_DAC_SET(DAC_code);
-		return 1;
+		Voltage=volt;
+		return ret_OK;
 	}
 	if(volt>=(cal_DAC_down_voltage*gain_x2_coeff) && volt<=(cal_DAC_up_voltage*gain_x2_coeff))
 	{
 		if(Current_output_status!=Output_x2_STATE)output_state(Output_x2_STATE);
-		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff/0xFFFFF; // Calculate 1 LSB resolution
-		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage*gain_x2_coeff)/dac_resolution);
+		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
+		DAC_code=(uint32_t)((volt/gain_x2_coeff-cal_DAC_down_voltage)/dac_resolution);
 		cmd_DAC_SET(DAC_code);
-		return 1;
+		Voltage=volt;
+		return ret_OK;
 	}
 	if(volt>=(cal_DAC_down_voltage*gain_x4_coeff) && volt<=(cal_DAC_up_voltage*gain_x4_coeff))
 	{
 		if(Current_output_status!=Output_x4_STATE)output_state(Output_x4_STATE);
-		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff/0xFFFFF; // Calculate 1 LSB resolution
-		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage*gain_x4_coeff)/dac_resolution);
+		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
+		DAC_code=(uint32_t)((volt/gain_x4_coeff-cal_DAC_down_voltage)/dac_resolution);
 		cmd_DAC_SET(DAC_code);
-		return 1;
+		Voltage=volt;
+		return ret_OK;
 	}
 
-	return 0;
+	return ret_ERROR;
 }
 //==============================================================================================
+
+
+
+
+//==============================================================================================
+FunctionalState Recalculate_ramp_speed(uint8_t new_state, float new_speed)
+{
+	float tmp_speed=0;
+	switch(new_state)
+	{
+	case AMP_STATE:
+		if(new_state!=SWEEP_MODE) // set new mode (recalculate)
+		{
+			amp_target_speed=new_speed/C_value[C_ref];
+			SWEEP_MODE=AMP_STATE;
+		}
+		tmp_speed=amp_target_speed*C_value[C_ref];
+		break;
+	case DVDT_STATE:
+		tmp_speed=amp_target_speed;
+		break;
+	}
+	if(tmp_speed<0.0009 || tmp_speed>1.1) // V/s
+	{
+		return ret_ERROR;
+	} else
+	{
+		DAC_target_speed=tmp_speed;
+		return ret_OK;
+	}
+
+}
+//==============================================================================================
+
 
 
 //==============================================================================================
@@ -356,6 +472,8 @@ FunctionalState cmd_SWEEP_RATE(float rate)
 FunctionalState cmd_CAL(uint8_t cmd, float coeff)
 {
 	float tmpx;
+
+	if(CAL_STATE==LOCK_STATE) return 0;
 
 	tmpx=coeff;
 
