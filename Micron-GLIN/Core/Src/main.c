@@ -110,7 +110,7 @@ uint32_t DDS_target_multipiller=1;
 uint8_t mode=dU_dt_SCREEN;
 
 float Current_flow=1E-12;
-uint8_t C_ref;
+uint8_t C_ref=0;
 float Voltage;
 
 float DDS_clock_frequecny=1E7;
@@ -130,7 +130,6 @@ FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
 FunctionalState Ramp_dac_step_complete=0;
 FunctionalState CAL_STATE=LOCK_STATE;
-FunctionalState SWEEP_MODE=DVDT_STATE;
 
 /* USER CODE END PV */
 
@@ -282,17 +281,6 @@ int main(void)
 			break;
 			}
 
-
-
-/*			if(SWEEP_MODE==DVDT_STATE)
-			{
-				display_screen(dU_dt_SCREEN);
-			}
-			else
-			{
-				display_screen(AMP_SCREEN);
-			}
-*/
 			LcdUpdate();
 			LcdClear_massive();
 		}
@@ -488,7 +476,7 @@ void Parsing_USB_command(void)
 		if(!(strcmp(decoded_string_2,"START")))
 		{
 			cmd_SWEEP_START();
-			mode=dU_dt_SCREEN;
+			if(mode==VOLT_SCREEN)mode=dU_dt_SCREEN;
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
 		}
@@ -497,7 +485,6 @@ void Parsing_USB_command(void)
 			if(!(strcmp(decoded_string_2,"STOP")))
 			{
 				cmd_SWEEP_STOP();
-				mode=dU_dt_SCREEN;
 				send_answer_to_CDC(OK_TYPE_2);
 				return;
 			}
@@ -509,6 +496,28 @@ void Parsing_USB_command(void)
 
 		}
 	}
+	// ==== CAP_SET command ====
+	if(!(strcmp(decoded_string_1,"CAP_SET")))
+	{
+		if(sscanf((char *)command_buffer,"%s %d", decoded_string_1, &num_of_cap)!=2)
+			{
+				send_answer_to_CDC(ERROR_TYPE_2);
+				return;
+			}
+
+			if(cmd_CAP_SET(num_of_cap))
+			{
+				send_answer_to_CDC(OK_TYPE_2);
+				return;
+			}
+			else
+			{
+				send_answer_to_CDC(ERROR_TYPE_2);
+				return;
+			}
+	}
+
+
 	// ==== DAC_SET command ====
 	if(!(strcmp(decoded_string_1,"DAC_SET")))
 	{
@@ -599,38 +608,6 @@ void Parsing_USB_command(void)
 			}
 		}
 	}
-
-	// ==== SWEEP_MODE command ====
-	if(!(strcmp(decoded_string_1,"SWEEP_MODE")))
-	{
-		if(sscanf((char *)command_buffer,"%s %s", decoded_string_1, decoded_string_2)!=2)
-		{
-			send_answer_to_CDC(ERROR_TYPE_2);
-			return;
-		}
-
-		if(!(strcmp(decoded_string_2,"DVDT"))){
-			mode=dU_dt_SCREEN;
-			//Recalculate_ramp_speed(DVDT_STATE);
-			send_answer_to_CDC(OK_TYPE_2);
-			return;
-		}
-		else
-		{
-			if(!(strcmp(decoded_string_2,"AMP"))){
-				mode=AMP_SCREEN;
-				//Recalculate_ramp_speed(AMP_STATE);
-				send_answer_to_CDC(OK_TYPE_2);
-				return;
-			}
-			else
-			{
-				send_answer_to_CDC(ERROR_TYPE_2);
-				return;
-			}
-		}
-	}
-
 
 	// ==== CAL_STATE command ====
 	if(!(strcmp(decoded_string_1,"CAL_STATE")))
@@ -836,21 +813,36 @@ void Parsing_USB_command(void)
 	// ==== SWEEP_RATE command ====
 	if(!(strcmp(decoded_string_1,"SWEEP_RATE")))
 	{
-		if(sscanf((char *)command_buffer,"%s %f", decoded_string_1, &f_value)!=2)
-		{
-			send_answer_to_CDC(ERROR_TYPE_2);
-			return;
-		}
-
-		if(cmd_SWEEP_RATE(f_value))
-		{
-			send_answer_to_CDC(OK_TYPE_2);
-			return;
-		}
-		else
+		if(sscanf((char *)command_buffer,"%s %s %f", decoded_string_1, decoded_string_2, &f_value)!=3)
 		{
 			send_answer_to_CDC(ERROR_TYPE_1);
 			return;
+		}
+		if(!(strcmp(decoded_string_2,"AMP")))
+		{
+			if(Recalculate_ramp_speed(AMP_SCREEN, f_value)==ret_OK)
+			{
+				send_answer_to_CDC(OK_TYPE_2);
+				return;
+			}
+			else
+			{
+				send_answer_to_CDC(ERROR_TYPE_2);
+				return;
+			}
+		}
+		else
+		{
+			if(Recalculate_ramp_speed(dU_dt_SCREEN, f_value)==ret_OK)
+			{
+				send_answer_to_CDC(OK_TYPE_2);
+				return;
+			}
+			else
+			{
+				send_answer_to_CDC(ERROR_TYPE_2);
+				return;
+			}
 		}
 	}
 

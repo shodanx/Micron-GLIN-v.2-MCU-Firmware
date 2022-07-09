@@ -37,8 +37,9 @@ extern float ramp_target_speed;
 extern uint8_t C_ref;
 extern float Voltage;
 
+extern uint8_t mode;
+
 extern FunctionalState CAL_STATE;
-extern FunctionalState SWEEP_MODE;
 extern uint8_t eta_hours,eta_minute,eta_second;
 
 extern float Current_flow;
@@ -60,8 +61,7 @@ const uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"\n\r"
 		"Usage:\n\r"
 		"SWEEP START/STOP              - control sweep cycle\n\r"
-		"SWEEP_RATE 1.23456E-3         - set dv/dt speed (range 1...0.001V/s) or current through capacitance directly in ampere\n\r"
-		"SWEEP_MODE DVDT/AMP           - switch between dv/dt or ampere mode\n\r"
+		"SWEEP_RATE DVDT/AMP 1.23456E-3         - set dv/dt speed (range 1...0.001V/s) or current through capacitance directly in ampere\n\r"
 		"SWEEP_DIRECTION UP/DOWN/CYCLE - set dv/dt direction(increase, decrease or cycle)\n\r"
 		"CAP_SET 1                     - active reference capacitor\n\r"
 		"DAC_SET TOP/DOWN/voltage      - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
@@ -405,8 +405,18 @@ FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 
 	return ret_ERROR;
 }
-//==============================================================================================
 
+
+
+//==============================================================================================
+FunctionalState cmd_CAP_SET(uint8_t value)
+{
+	if(value>=C_value_max_count)
+		return ret_ERROR;
+	C_ref=value;
+	if(mode==AMP_SCREEN)return Recalculate_ramp_speed(mode,amp_target_speed);
+	return ret_OK;
+}
 
 
 
@@ -414,58 +424,42 @@ FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 FunctionalState Recalculate_ramp_speed(uint8_t new_state, float new_speed)
 {
 	float tmp_speed=0;
-	switch(new_state)
-	{
-	case AMP_STATE:
-		if(new_state!=SWEEP_MODE) // set new mode (recalculate)
-		{
-			amp_target_speed=new_speed/C_value[C_ref];
-			SWEEP_MODE=AMP_STATE;
-		}
-		tmp_speed=amp_target_speed*C_value[C_ref];
-		break;
-	case DVDT_STATE:
-		tmp_speed=amp_target_speed;
-		break;
-	}
-	if(tmp_speed<0.0009 || tmp_speed>1.1) // V/s
-	{
+
+	if(new_state==AMP_SCREEN) // check current
+		tmp_speed=new_speed/(C_value[C_ref]*1E-12);
+	if(new_state==dU_dt_SCREEN) // check speed
+		tmp_speed=new_speed;
+
+	if(tmp_speed<0.0009 || tmp_speed>1.1) // limit V/s
 		return ret_ERROR;
-	} else
+
+	if(new_state==AMP_SCREEN) // check current
 	{
-		DAC_target_speed=tmp_speed;
-		return ret_OK;
+		amp_target_speed=new_speed;
+		ramp_target_speed=tmp_speed;
+		mode=AMP_SCREEN;
 	}
 
-}
-//==============================================================================================
-
-
-
-//==============================================================================================
-FunctionalState cmd_SWEEP_RATE(float rate)
-{
-	if(rate<0.0009 || rate>1.1) // V/s
+	if(new_state==dU_dt_SCREEN) // check speed
 	{
-		return 0;
+		ramp_target_speed=new_speed;
+		mode=dU_dt_SCREEN;
+	}
+
+	DAC_target_speed=tmp_speed;
+	if(cfg.LDACMODE==0)
+	{
+		CPLD_control(CPLD_OFF_STATE);
 	}
 	else
 	{
-		DAC_target_speed=rate;
-		if(cfg.LDACMODE==0)
-		{
-			CPLD_control(CPLD_OFF_STATE);
-		}
-		else
-		{
-			CPLD_control(CPLD_ON_STATE);
-		}
-
-		DDS_Calculation();
-		return 1;
+		CPLD_control(CPLD_ON_STATE);
 	}
+	DDS_Calculation();
+	return ret_OK;
 }
 //==============================================================================================
+
 
 
 //==============================================================================================

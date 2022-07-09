@@ -48,9 +48,6 @@
 #define UNLOCK_STATE		0
 #define LOCK_STATE			1
 
-#define DVDT_STATE			0
-#define AMP_STATE			1
-
 #define dU_dt_SCREEN		0
 #define Hello_SCREEN		1
 #define Warm_up_SCREEN		2
@@ -85,7 +82,6 @@ void cmd_SWEEP_START();
 void cmd_SWEEP_STOP();
 void cmd_DAC_SET(uint32_t);
 FunctionalState cmd_SET_OUTPUT_VOLTAGE(float);
-FunctionalState cmd_SWEEP_RATE(float);
 
 FunctionalState cmd_CAL(uint8_t, float);
 
@@ -93,6 +89,7 @@ void display_screen(uint8_t);
 void output_state(uint8_t);
 
 FunctionalState Recalculate_ramp_speed(uint8_t, float);
+FunctionalState cmd_CAP_SET(uint8_t);
 
 uint32_t float_to_binary(float);
 float binary_to_float(uint32_t);
