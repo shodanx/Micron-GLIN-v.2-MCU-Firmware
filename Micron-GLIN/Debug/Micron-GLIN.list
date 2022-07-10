@@ -7793,7 +7793,6 @@ int main(void)
 			break;
  8003db2:	bf00      	nop
 			}
-
 			LcdUpdate();
  8003db4:	f7fe f9b0 	bl	8002118 <LcdUpdate>
 			LcdClear_massive();

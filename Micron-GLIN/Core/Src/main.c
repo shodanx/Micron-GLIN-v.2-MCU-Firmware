@@ -304,7 +304,6 @@ int main(void)
 				display_screen(VOLT_SCREEN);
 			break;
 			}
-
 			LcdUpdate();
 			LcdClear_massive();
 		}
