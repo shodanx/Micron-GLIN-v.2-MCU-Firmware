@@ -6055,7 +6055,7 @@ FunctionalState Recalculate_ramp_speed(uint8_t new_state, float new_speed)
  8003242:	79fb      	ldrb	r3, [r7, #7]
  8003244:	2b04      	cmp	r3, #4
  8003246:	d133      	bne.n	80032b0 <Recalculate_ramp_speed+0x80>
-		tmp_speed=(new_speed+(calculate_output_voltage()*C_leakage[C_ref]))/(C_value[C_ref]*1E-12);
+		tmp_speed=(new_speed-(calculate_output_voltage()*C_leakage[C_ref]))/(C_value[C_ref]*1E-12);
  8003248:	f7ff fd1c 	bl	8002c84 <calculate_output_voltage>
  800324c:	4602      	mov	r2, r0
  800324e:	4b42      	ldr	r3, [pc, #264]	; (8003358 <Recalculate_ramp_speed+0x128>)
@@ -6067,9 +6067,9 @@ FunctionalState Recalculate_ramp_speed(uint8_t new_state, float new_speed)
  800325c:	4610      	mov	r0, r2
  800325e:	f7fd fdb3 	bl	8000dc8 <__aeabi_fmul>
  8003262:	4603      	mov	r3, r0
- 8003264:	6839      	ldr	r1, [r7, #0]
- 8003266:	4618      	mov	r0, r3
- 8003268:	f7fd fca6 	bl	8000bb8 <__addsf3>
+ 8003264:	4619      	mov	r1, r3
+ 8003266:	6838      	ldr	r0, [r7, #0]
+ 8003268:	f7fd fca4 	bl	8000bb4 <__aeabi_fsub>
  800326c:	4603      	mov	r3, r0
  800326e:	4618      	mov	r0, r3
  8003270:	f7fd f8fc 	bl	800046c <__aeabi_f2d>

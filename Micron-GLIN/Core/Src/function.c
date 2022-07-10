@@ -454,7 +454,7 @@ FunctionalState Recalculate_ramp_speed(uint8_t new_state, float new_speed)
 	float tmp_speed=0;
 
 	if(new_state==AMP_SCREEN) // check current
-		tmp_speed=(new_speed+(calculate_output_voltage()*C_leakage[C_ref]))/(C_value[C_ref]*1E-12);
+		tmp_speed=(new_speed-(calculate_output_voltage()*C_leakage[C_ref]))/(C_value[C_ref]*1E-12);
 	if(new_state==dU_dt_SCREEN) // check speed
 		tmp_speed=new_speed;
 
