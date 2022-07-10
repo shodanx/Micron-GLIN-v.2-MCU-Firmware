@@ -98,8 +98,9 @@ float binary_to_float(uint32_t);
 
 uint32_t EEPROM_read(uint32_t);
 void EEPROM_write(uint32_t, uint32_t);
-float binary_to_float(uint32_t);
 void load_data_from_EEPROM(void);
-void write_c_value_to_EEPROM(uint32_t, float);
+void write_c_value_to_EEPROM(uint32_t, float, float);
+float calculate_output_voltage(void);
+
 
 #endif /* INC_FUNCTION_H_ */

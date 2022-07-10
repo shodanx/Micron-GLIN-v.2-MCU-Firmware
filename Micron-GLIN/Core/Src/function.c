@@ -45,6 +45,7 @@ extern uint8_t eta_hours,eta_minute,eta_second;
 extern float Current_flow;
 
 float C_value[C_value_max_count];
+float C_leakage[C_value_max_count];
 
 float dac_resolution;
 
@@ -72,16 +73,16 @@ const uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"\n\r"
 		"Enter command: ";
 const uint8_t extended_help1[]="\n\r"
-		"CAL_STATE LOCK/UNLOCK       - Lock or unlock calibration\n\r"
-		"DAC_CAL_TOP 10.01234        - set maximum positive DAC voltage\n\r"
-		"DAC_CAL_DOWN -9.99876       - set maximum negative DAC voltage\n\r"
-		"DAC_CAL_TEMP START          - start DAC temperature calibration cycle\n\r"
-		"DAC_CAL_POLY_A 1.266415E-16 - set Linearity correction\n\r" //1.266415E-16x2 - 1.845382E-10x + 1.000056E+00
-		"DAC_CAL_POLY_B 1.845382E-10 - set Linearity correction\n\r"
-		"DAC_CAL_POLY_C 1.000056E+00 - set Linearity correction\n\r"
-		"GAIN_X2_CAL 2.001234        - set LT5400 x2 gain\n\r"
-		"GAIN_X4_CAL 4.001234        - set LT5400 x4 gain\n\r"
-		"CAL_C_VALUE 2 1.84611E+1    - set capacitance of reference cap\n\r"
+		"CAL_STATE LOCK/UNLOCK            - Lock or unlock calibration\n\r"
+		"DAC_CAL_TOP 10.01234             - set maximum positive DAC voltage\n\r"
+		"DAC_CAL_DOWN -9.99876            - set maximum negative DAC voltage\n\r"
+		"DAC_CAL_TEMP START               - start DAC temperature calibration cycle\n\r"
+		"DAC_CAL_POLY_A 1.266415E-16      - set Linearity correction\n\r" //1.266415E-16x2 - 1.845382E-10x + 1.000056E+00
+		"DAC_CAL_POLY_B 1.845382E-10      - set Linearity correction\n\r"
+		"DAC_CAL_POLY_C 1.000056E+00      - set Linearity correction\n\r"
+		"GAIN_X2_CAL 2.001234             - set LT5400 x2 gain\n\r"
+		"GAIN_X4_CAL 4.001234             - set LT5400 x4 gain\n\r"
+		"CAL_C_VALUE 2 1.84611E+1 6.2E-14 - set capacitance (pF) and leakage (A/V) of reference cap\n\r"
 		"\n\r"
 		"\n\r"
 		"Enter command: ";
@@ -206,11 +207,9 @@ void display_screen(uint8_t type)
 	//----------------------------------------------------------//
 	case VOLT_SCREEN:
 
-		if(Current_output_status==Output_x4_STATE)sprintf(lcd_buf,"Vout %2.5fV",(cal_DAC_down_voltage+(DAC_code*dac_resolution))*gain_x4_coeff);
-		if(Current_output_status==Output_x2_STATE)sprintf(lcd_buf,"Vout %2.5fV",(cal_DAC_down_voltage+(DAC_code*dac_resolution))*gain_x2_coeff);
-		if(Current_output_status==Output_x1_STATE)sprintf(lcd_buf,"Vout %2.5fV",(cal_DAC_down_voltage+(DAC_code*dac_resolution)));
-		if(Current_output_status==Output_off_STATE)sprintf(lcd_buf,"Vout %2.5fV",Voltage);
+		sprintf(lcd_buf,"Vout %2.5fV",calculate_output_voltage());
 		LcdString(1, 1);
+
 		if(Current_output_status==Output_off_STATE)
 		{
 			sprintf(lcd_buf,"OUTPUT DISABLED");
@@ -293,6 +292,26 @@ void display_screen(uint8_t type)
 
 }
 //==============================================================================================
+
+
+
+//==============================================================================================
+float calculate_output_voltage(void)
+{
+	float tmp=0;
+
+	if(Current_output_status==Output_x4_STATE)
+		tmp=(cal_DAC_down_voltage+(DAC_code*dac_resolution))*gain_x4_coeff;
+	if(Current_output_status==Output_x2_STATE)
+		tmp=(cal_DAC_down_voltage+(DAC_code*dac_resolution))*gain_x2_coeff;
+	if(Current_output_status==Output_x1_STATE)
+		tmp=cal_DAC_down_voltage+(DAC_code*dac_resolution);
+	if(Current_output_status==Output_off_STATE)
+		tmp=0;
+	return tmp;
+}
+//==============================================================================================
+
 
 
 //==============================================================================================
@@ -433,7 +452,7 @@ FunctionalState Recalculate_ramp_speed(uint8_t new_state, float new_speed)
 	float tmp_speed=0;
 
 	if(new_state==AMP_SCREEN) // check current
-		tmp_speed=new_speed/(C_value[C_ref]*1E-12);
+		tmp_speed=(new_speed+(calculate_output_voltage()*C_leakage[C_ref]))/(C_value[C_ref]*1E-12);
 	if(new_state==dU_dt_SCREEN) // check speed
 		tmp_speed=new_speed;
 
@@ -548,22 +567,25 @@ void load_data_from_EEPROM(void)
 
 	for(addr_i=0; addr_i<C_value_max_count; addr_i++)
 	{
-		addr_hex=C_value_base_EEPROM_ADDRESS+(0x08*addr_i);
+		addr_hex=C_value_base_EEPROM_ADDRESS+(0x10*addr_i);
 		C_value[addr_i]=binary_to_float(EEPROM_read(addr_hex));
+		C_leakage[addr_i]=binary_to_float(EEPROM_read(addr_hex+0x08));
 	}
 }
 //==============================================================================================
 
 
 //==============================================================================================
-void write_c_value_to_EEPROM(uint32_t addr_i, float value)
+void write_c_value_to_EEPROM(uint32_t addr_i, float value,float leakage)
 {
-	uint32_t addr_hex=C_value_base_EEPROM_ADDRESS+(0x08*addr_i);
+	uint32_t addr_hex=C_value_base_EEPROM_ADDRESS+(0x10*addr_i);
 
 	if(addr_i>=C_value_max_count)return;
 
 	C_value[addr_i]=value;
 	EEPROM_write(addr_hex,float_to_binary(value));
+	C_leakage[addr_i]=leakage;
+	EEPROM_write(addr_hex+0x08,float_to_binary(leakage));
 }
 //==============================================================================================
 

@@ -85,15 +85,16 @@ extern float gain_x2_coeff;
 extern float gain_x4_coeff;
 
 extern float C_value[C_value_max_count];
+extern float C_leakage[C_value_max_count];
 
-char large_string_buffer[60];
+char large_string_buffer[command_buffer_len];
 
 uint8_t eta_hours,eta_minute,eta_second;
 
 int16_t Enc_Counter = 0;
 uint32_t Display_timeout=0;
 
-CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, 30);
+CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, command_buffer_len);
 
 uint32_t DAC_tx_buffer;
 uint16_t DAC_tx_tmp_buffer[2];
@@ -475,10 +476,10 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void Parsing_USB_command(void)
 {
 	//char *found;
-	char decoded_string_1[31];
-	char decoded_string_2[31];
+	char decoded_string_1[command_buffer_len];
+	char decoded_string_2[command_buffer_len];
 	int num_of_cap;
-	float f_value;
+	float f_value,f_value2;
 	uint8_t cdc_counter=0;
 
 	if(sscanf((char *)command_buffer,"%s", decoded_string_1)!=1)
@@ -814,14 +815,14 @@ void Parsing_USB_command(void)
 	// ==== CAL_C_VALUE command ====
 	if(!(strcmp(decoded_string_1,"CAL_C_VALUE")))
 	{
-		if(sscanf((char *)command_buffer,"%s %d %f", decoded_string_1, &num_of_cap, &f_value)!=3)
+		if(sscanf((char *)command_buffer,"%s %d %f %f", decoded_string_1, &num_of_cap, &f_value, &f_value2)!=4)
 		{
 			send_answer_to_CDC(ERROR_TYPE_2);
 			return;
 		}
 		if(CAL_STATE!=LOCK_STATE)
 		{
-			write_c_value_to_EEPROM(num_of_cap, f_value);
+			write_c_value_to_EEPROM(num_of_cap, f_value, f_value2);
 			send_answer_to_CDC(OK_TYPE_2);
 			return;
 		}
@@ -889,7 +890,7 @@ void Parsing_USB_command(void)
 			sprintf((char *)large_string_buffer,"LT5400 gain X4 correction: %1.6E\n\r",gain_x4_coeff);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			for(uint8_t i=0;i<C_value_max_count;i++)
 			{
-				sprintf((char *)large_string_buffer,"C%d capacitance: %1.6EpF\n\r",(int)i,C_value[i]);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+				sprintf((char *)large_string_buffer,"C%d capacitance: %1.6EpF, leakage: %1.6EA/V\n\r",(int)i,C_value[i],C_leakage[i]);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			}
 			sprintf((char *)large_string_buffer,"\n\rDAC code: 0x%x\n\r",(unsigned int)DAC_code);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"DDS FTW: 0x%x\n\r",(unsigned int)DDS_FTW);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
