@@ -303,14 +303,27 @@ int main(void)
 
 		if(Push_start_button>2 && Push_start_button<10)
 		{
-			if(cfg.LDACMODE==0)
+			if(mode==VOLT_SCREEN)
 			{
-				cmd_SWEEP_START();
-				if(mode==VOLT_SCREEN)mode=dU_dt_SCREEN;
+				if(Current_output_status==Output_off_STATE)
+				{
+					cmd_SET_OUTPUT_VOLTAGE(Voltage);
+				}
+				else
+				{
+					output_state(Output_off_STATE);
+				}
 			}
 			else
 			{
-				cmd_SWEEP_STOP();
+				if(cfg.LDACMODE==0)
+				{
+					cmd_SWEEP_START();
+				}
+				else
+				{
+					cmd_SWEEP_STOP();
+				}
 			}
 			Push_start_button=10;
 		}
