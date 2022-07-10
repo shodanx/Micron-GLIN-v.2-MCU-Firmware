@@ -33,6 +33,8 @@ extern uint32_t DAC_code;
 extern float DAC_target_speed;
 extern float amp_target_speed;
 extern float ramp_target_speed;
+extern float amp_target_speed_maximum;
+
 
 extern uint8_t C_ref;
 extern float Voltage;
@@ -207,6 +209,28 @@ void display_screen(uint8_t type)
 		break;
 
 	//----------------------------------------------------------//
+	case DIR_SELECT_SCREEN:
+		sprintf(lcd_buf,"Ramp direction");
+		LcdString(1, 1);
+
+		if(DAC_code_direction==DIRECTION_UP_STATE)
+			sprintf(lcd_buf,"UP");
+		if(DAC_code_direction==DIRECTION_DOWN_STATE)
+			sprintf(lcd_buf,"DOWN");
+		if(DAC_code_direction==DIRECTION_CYCLE_STATE)
+			sprintf(lcd_buf,"CYCLE");
+		LcdString(1, 2);
+		break;
+	//----------------------------------------------------------//
+	case CAP_SELECT_SCREEN:
+		sprintf(lcd_buf,"Reference C%1u",C_ref);
+		LcdString(1, 1);
+
+		sprintf(lcd_buf,"Cap %.6fpF",C_value[C_ref]);
+		LcdString(1, 2);
+		break;
+	//----------------------------------------------------------//
+
 	case VOLT_SCREEN:
 
 		sprintf(lcd_buf,"Vout %2.5fV",calculate_output_voltage());
@@ -441,11 +465,16 @@ FunctionalState cmd_CAP_SET(uint8_t value)
 {
 	if(value>=C_value_max_count)
 		return ret_ERROR;
+	if(C_value[value]==0)
+		return ret_ERROR;
+
 	C_ref=value;
+	amp_target_speed=(C_value[C_ref]*1E-12)*0.1;
+	amp_target_speed_maximum=(C_value[C_ref]*1E-12)*1.1;
+
 	if(mode==AMP_SCREEN)return Recalculate_ramp_speed(mode,amp_target_speed);
 	return ret_OK;
 }
-
 
 
 //==============================================================================================

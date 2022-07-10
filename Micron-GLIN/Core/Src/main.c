@@ -106,6 +106,9 @@ float DDS_target_frequecny;
 float DAC_target_speed;
 float amp_target_speed=1E-12;
 float ramp_target_speed=0.1;
+float amp_target_speed_maximum;
+float amp_target_speed_minimum;
+
 uint32_t DDS_target_multipiller=1;
 
 uint8_t mode=dU_dt_SCREEN;
@@ -133,6 +136,7 @@ FunctionalState Ramp_dac_step_complete=0;
 FunctionalState CAL_STATE=LOCK_STATE;
 FunctionalState Need_off_output=0;
 uint8_t Push_start_button=0;
+uint8_t Push_Encode_button=0;
 uint8_t Hold_start_button=0;
 
 /* USER CODE END PV */
@@ -238,6 +242,8 @@ int main(void)
 
 	send_answer_to_CDC(CLEAR_TYPE_1);
 
+	cmd_CAP_SET(C_ref);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -288,8 +294,14 @@ int main(void)
 				Need_update_DDS=0;
 				Ramp_dac_step_complete=0;
 			}
-			DDS_Calculation();
-			//Recalculate_ramp_speed(SWEEP_MODE);
+			if(mode==AMP_SCREEN)
+			{
+				Recalculate_ramp_speed(AMP_SCREEN,amp_target_speed);
+			}
+			else
+			{
+				DDS_Calculation();
+			}
 
 		}
 
@@ -300,6 +312,15 @@ int main(void)
 			output_state(Output_off_STATE);
 			Need_off_output=0;
 		}
+
+		if(Push_Encode_button>2 && Push_Encode_button<5)
+		{
+			mode++;
+			if(mode>DIR_SELECT_SCREEN)
+				mode=dU_dt_SCREEN;
+			Push_Encode_button=5;
+		}
+
 
 		if(Push_start_button>2 && Push_start_button<10)
 		{
@@ -334,15 +355,19 @@ int main(void)
 			{
 			//----------------------------------------------------------//
 			case dU_dt_SCREEN:
-			{
 				display_screen(dU_dt_SCREEN);
-			}
 			break;
 			case AMP_SCREEN:
 				display_screen(AMP_SCREEN);
 			break;
 			case VOLT_SCREEN:
 				display_screen(VOLT_SCREEN);
+			break;
+			case DIR_SELECT_SCREEN:
+				display_screen(DIR_SELECT_SCREEN);
+			break;
+			case CAP_SELECT_SCREEN:
+				display_screen(CAP_SELECT_SCREEN);
 			break;
 			}
 			LcdUpdate();
@@ -367,16 +392,58 @@ int main(void)
 		}
 		break;
 		case AMP_SCREEN:
-/*			if(Enc_Counter>2 || Enc_Counter<-2)
+//			if(Enc_Counter>2 || Enc_Counter<-2)
+//			{
+//				amp_target_speed_maximum;
+//
+//				Recalculate_ramp_speed(AMP_SCREEN, (amp_target_speed+(Enc_Counter*amp_target_speed*1E-2)));
+//			}
+//			else
 			{
-				Recalculate_ramp_speed(AMP_SCREEN, round((amp_target_speed+Enc_Counter*1E-2)*1E2)/1E2);
-			}
-			else
-			{
-				Recalculate_ramp_speed(AMP_SCREEN, round((amp_target_speed+Enc_Counter*1E-3)*1E3)/1E3);
+				uint8_t Ei,Eix;
+				float amp_target_speed_maximum_tmp=amp_target_speed_maximum;
+				float amp_target_speed_tmp=amp_target_speed;
+				for(Ei=1;Ei<21;Ei++)
+				{
+					amp_target_speed_maximum_tmp*=10;
+					amp_target_speed_tmp*=10;
+					if(amp_target_speed_maximum_tmp>=1)
+						break;
+				}
+				if(Enc_Counter>2 || Enc_Counter<-2)
+				{
+					amp_target_speed_tmp*=100;
+					amp_target_speed_tmp+=Enc_Counter;
+					amp_target_speed_tmp=round(amp_target_speed_tmp);
+					amp_target_speed_tmp/=100;
+				}
+				else
+				{
+					amp_target_speed_tmp*=1000;
+					amp_target_speed_tmp+=Enc_Counter;
+					amp_target_speed_tmp=round(amp_target_speed_tmp);
+					amp_target_speed_tmp/=1000 ;
+				}
+				for(Eix=Ei;Eix>0;Eix--)
+				{
+					amp_target_speed_tmp/=10;
+				}
+
+				Recalculate_ramp_speed(AMP_SCREEN, amp_target_speed_tmp);
 			}
 			Enc_Counter=0;
-*/
+		break;
+		case CAP_SELECT_SCREEN:
+			C_ref+=Enc_Counter;
+			if(C_ref>C_value_max_count)C_ref=0;
+			cmd_CAP_SET(C_ref);
+			Enc_Counter=0;
+		break;
+		case DIR_SELECT_SCREEN:
+			DAC_code_direction+=Enc_Counter;
+			if(DAC_code_direction>DIRECTION_CYCLE_STATE)
+				DAC_code_direction=DIRECTION_DOWN_STATE;
+			Enc_Counter=0;
 		break;
 		case VOLT_SCREEN:
 			if(Enc_Counter>4 || Enc_Counter<-4)
@@ -489,6 +556,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		Display_timeout++;
 		if(Push_start_button!=0)Push_start_button++;
 		if(Push_start_button>40)Push_start_button=0;
+
+		if(Push_Encode_button!=0)Push_Encode_button++;
+		if(Push_Encode_button>15)Push_Encode_button=0;
+
 		Enc_Counter+=((int16_t)TIM4->CNT)/2;
 		TIM4->CNT = (uint16_t)(((int16_t)TIM4->CNT) % 2);
 		if(!HAL_GPIO_ReadPin(Start_button_GPIO_Port, Start_button_Pin))
@@ -574,11 +645,7 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if((GPIO_Pin == Start_button_Pin) || (GPIO_Pin == Encode_Push_Pin))Display_need_wakeup=1;
 
 	if(GPIO_Pin == Encode_Push_Pin)
-	{
-		mode++;
-		if(mode>VOLT_SCREEN)
-			mode=dU_dt_SCREEN;
-	}
+		if(Push_Encode_button==0)Push_Encode_button=1;
 
 	if(GPIO_Pin == Start_button_Pin)
 		if(Push_start_button==0)Push_start_button=1;
@@ -1007,6 +1074,9 @@ void Parsing_USB_command(void)
 			sprintf((char *)large_string_buffer,"DDS FTW: 0x%x\n\r",(unsigned int)DDS_FTW);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"CPLD control word: 0x%x\n\r",CPLD_WORD);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"Output mode: 0x%x\n\r",Current_output_status);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+			sprintf((char *)large_string_buffer,"Sweep rate: %1.6EV/s\n\r",ramp_target_speed);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+			sprintf((char *)large_string_buffer,"Current rate: %1.6EA\n\r",amp_target_speed);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+			sprintf((char *)large_string_buffer,"Selected reference capacitor: 0x%x\n\r",C_ref);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			sprintf((char *)large_string_buffer,"Temperature: %2.3f°C\n\r",TMP117_get_Temperature(hi2c1)*0.0078125);while((CDC_Transmit_FS((uint8_t *)large_string_buffer, strlen((const char *)large_string_buffer))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 			send_answer_to_CDC(OK_TYPE_2);
 			return;

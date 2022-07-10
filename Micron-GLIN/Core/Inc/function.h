@@ -55,6 +55,9 @@
 #define dU_dt_SCREEN		3
 #define AMP_SCREEN			4
 #define VOLT_SCREEN			5
+#define CAP_SELECT_SCREEN	6
+#define DIR_SELECT_SCREEN	7
+
 
 #define ret_ERROR	0
 #define ret_OK		1
