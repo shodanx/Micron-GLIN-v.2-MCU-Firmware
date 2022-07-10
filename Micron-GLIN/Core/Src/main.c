@@ -74,7 +74,7 @@ extern void CPLD_control(uint8_t);
 
 extern volatile FunctionalState USB_CDC_End_Line_Received;
 
-extern uint8_t command_buffer[31];
+extern uint8_t command_buffer[command_buffer_len];
 
 extern float cal_DAC_up_voltage;
 extern float cal_DAC_down_voltage;
@@ -242,13 +242,36 @@ int main(void)
 	{
 		if(USB_CDC_End_Line_Received)
 		{
-			uint8_t i=0;
+			uint8_t i=0,x=0;
 			USB_CDC_End_Line_Received=0;
 			while (1) {
+				if (i>=command_buffer_len) break;
 				if (CIRC_GBUF_POP(USB_rx_command_buffer,&command_buffer[i])) command_buffer[i]='\n';
 				if (command_buffer[i]=='\n' || command_buffer[i]=='\r') break;
 				i++;
 			}
+			i=0;
+			x=0;
+			while (command_buffer[i]!='\0' && i<command_buffer_len)
+			{
+				if (command_buffer[i]=='\177') // Backspace
+				{
+					if(x>0)x--;
+				}
+				else
+				{
+					command_buffer[x]=command_buffer[i];
+					x++;
+				}
+				i++;
+			}
+			while (x<command_buffer_len)
+			{
+				command_buffer[x]='\0';
+				x++;
+			}
+			command_buffer[command_buffer_len-1]='\0';
+
 			Parsing_USB_command();
 			if(Display_status==0)Display_need_wakeup=1;
 		}
@@ -878,8 +901,15 @@ void Parsing_USB_command(void)
 		}
 		else
 		{
-			send_answer_to_CDC(ERROR_TYPE_1);
-			return;
+			if(!(strcmp(decoded_string_2,"HELP_EXTENDED"))){
+				send_answer_to_CDC(EXTENDED_HELP);
+				return;
+			}
+			else
+			{
+				send_answer_to_CDC(ERROR_TYPE_1);
+				return;
+			}
 		}
 	}
 

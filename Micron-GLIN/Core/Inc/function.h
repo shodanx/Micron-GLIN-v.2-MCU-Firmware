@@ -30,6 +30,7 @@
 #define GAIN_X4_CAL		13
 #define NONE			14
 #define RUN_CAL_TYPE_TEMP 15
+#define EXTENDED_HELP	 16
 
 #define Output_off_STATE	0
 #define Output_x1_STATE		1
@@ -58,6 +59,7 @@
 #define ret_ERROR	0
 #define ret_OK		1
 
+#define command_buffer_len 		64
 
 #define DAC_CODE_TOP	0xFFFFF
 #define DAC_CODE_DOWN	0x0

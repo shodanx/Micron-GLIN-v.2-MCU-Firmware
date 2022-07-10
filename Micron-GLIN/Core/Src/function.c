@@ -49,7 +49,7 @@ float C_value[C_value_max_count];
 float dac_resolution;
 
 volatile FunctionalState USB_CDC_End_Line_Received;
-uint8_t command_buffer[31];
+uint8_t command_buffer[command_buffer_len];
 
 const uint8_t OK[]="OK\n\r";
 const uint8_t run_cal[]="\r\nCalibration in progress..";
@@ -60,14 +60,18 @@ const uint8_t Error1[]="\033c \r\n ERROR command not recognized \n\r\n\r"
 		"I'm Micron-GLIN, please tell me what you want?\n\r"
 		"\n\r"
 		"Usage:\n\r"
-		"SWEEP START/STOP              - control sweep cycle\n\r"
-		"SWEEP_RATE DVDT/AMP 1.23456E-3         - set dv/dt speed (range 1...0.001V/s) or current through capacitance directly in ampere\n\r"
-		"SWEEP_DIRECTION UP/DOWN/CYCLE - set dv/dt direction(increase, decrease or cycle)\n\r"
-		"CAP_SET 1                     - active reference capacitor\n\r"
-		"DAC_SET TOP/DOWN/voltage      - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
-		"OUTPUT OFF/X1/X2/X4           - output mode\n\r"
-		"SHOW INFO                     - show calibration constant and operational data\n\r"
+		"SWEEP START/STOP                - control sweep cycle\n\r"
+		"SWEEP_RATE DVDT/AMP 1.23456E-3  - set dv/dt speed (range 1...0.001V/s) or current through capacitance directly in ampere\n\r"
+		"SWEEP_DIRECTION UP/DOWN/CYCLE   - set dv/dt direction(increase, decrease or cycle)\n\r"
+		"CAP_SET 1                       - set active reference capacitor\n\r"
+		"DAC_SET TOP/DOWN/voltage        - set DAC to 0xFFFFF, 0x0 or exact voltage value\n\r"
+		"OUTPUT OFF/X1/X2/X4             - output mode\n\r"
+		"SHOW INFO                       - show calibration constant and operational data\n\r"
+		"SHOW HELP_EXTENDED              - extended command set\n\r"
 		"\n\r"
+		"\n\r"
+		"Enter command: ";
+const uint8_t extended_help1[]="\n\r"
 		"CAL_STATE LOCK/UNLOCK       - Lock or unlock calibration\n\r"
 		"DAC_CAL_TOP 10.01234        - set maximum positive DAC voltage\n\r"
 		"DAC_CAL_DOWN -9.99876       - set maximum negative DAC voltage\n\r"
@@ -309,6 +313,9 @@ void send_answer_to_CDC(uint8_t type)
 		break;
 	case OK_TYPE_2:
 		while((CDC_Transmit_FS((uint8_t *)OK_Enter, strlen((const char *)OK_Enter))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
+		break;
+	case EXTENDED_HELP:
+		while((CDC_Transmit_FS((uint8_t *)extended_help1, strlen((const char *)extended_help1))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
 		break;
 	case CLEAR_TYPE_1:
 		while((CDC_Transmit_FS((uint8_t *)clear, strlen((const char *)clear))!=USBD_OK)&&cdc_counter<0xFF)cdc_counter++;
