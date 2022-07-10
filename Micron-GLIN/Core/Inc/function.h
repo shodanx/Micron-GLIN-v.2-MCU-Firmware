@@ -49,10 +49,10 @@
 #define UNLOCK_STATE		0
 #define LOCK_STATE			1
 
-#define dU_dt_SCREEN		0
-#define Hello_SCREEN		1
-#define Warm_up_SCREEN		2
-#define Ready_SCREEN		3
+#define Hello_SCREEN		0
+#define Warm_up_SCREEN		1
+#define Ready_SCREEN		2
+#define dU_dt_SCREEN		3
 #define AMP_SCREEN			4
 #define VOLT_SCREEN			5
 

@@ -131,7 +131,9 @@ FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
 FunctionalState Ramp_dac_step_complete=0;
 FunctionalState CAL_STATE=LOCK_STATE;
+FunctionalState Need_off_output=0;
 uint8_t Push_start_button=0;
+uint8_t Hold_start_button=0;
 
 /* USER CODE END PV */
 
@@ -290,7 +292,16 @@ int main(void)
 			//Recalculate_ramp_speed(SWEEP_MODE);
 
 		}
-		if(Push_start_button>2 && Push_start_button<20)
+
+		if(Need_off_output==1)
+		{
+			Push_start_button=10;
+			cmd_SWEEP_STOP();
+			output_state(Output_off_STATE);
+			Need_off_output=0;
+		}
+
+		if(Push_start_button>2 && Push_start_button<10)
 		{
 			if(cfg.LDACMODE==0)
 			{
@@ -301,7 +312,7 @@ int main(void)
 			{
 				cmd_SWEEP_STOP();
 			}
-			Push_start_button=20;
+			Push_start_button=10;
 		}
 
 		if(Need_update_Display && Display_status)
@@ -312,18 +323,6 @@ int main(void)
 			case dU_dt_SCREEN:
 			{
 				display_screen(dU_dt_SCREEN);
-				if(Enc_Counter!=0)
-				{
-					if(Enc_Counter>2 || Enc_Counter<-2)
-					{
-						Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-2)*1E2)/1E2);
-					}
-					else
-					{
-						Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-3)*1E3)/1E3);
-					}
-					Enc_Counter=0;
-				}
 			}
 			break;
 			case AMP_SCREEN:
@@ -335,6 +334,49 @@ int main(void)
 			}
 			LcdUpdate();
 			LcdClear_massive();
+		}
+		if(Enc_Counter!=0)
+		{
+		switch(mode)
+		{
+		//----------------------------------------------------------//
+		case dU_dt_SCREEN:
+		{
+			if(Enc_Counter>2 || Enc_Counter<-2)
+			{
+				Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-2)*1E2)/1E2);
+			}
+			else
+			{
+				Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-3)*1E3)/1E3);
+			}
+			Enc_Counter=0;
+		}
+		break;
+		case AMP_SCREEN:
+/*			if(Enc_Counter>2 || Enc_Counter<-2)
+			{
+				Recalculate_ramp_speed(AMP_SCREEN, round((amp_target_speed+Enc_Counter*1E-2)*1E2)/1E2);
+			}
+			else
+			{
+				Recalculate_ramp_speed(AMP_SCREEN, round((amp_target_speed+Enc_Counter*1E-3)*1E3)/1E3);
+			}
+			Enc_Counter=0;
+*/
+		break;
+		case VOLT_SCREEN:
+			if(Enc_Counter>4 || Enc_Counter<-4)
+			{
+				cmd_SET_OUTPUT_VOLTAGE(round((Voltage+Enc_Counter*1E-1)*1E1)/1E1);
+			}
+			else
+			{
+				cmd_SET_OUTPUT_VOLTAGE(round((Voltage+Enc_Counter*1E-3)*1E3)/1E3);
+			}
+			Enc_Counter=0;
+		break;
+		}
 		}
 		if(Display_need_wakeup)
 		{
@@ -433,9 +475,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		Need_update_Display=1;
 		Display_timeout++;
 		if(Push_start_button!=0)Push_start_button++;
-		if(Push_start_button>60)Push_start_button=0;
+		if(Push_start_button>40)Push_start_button=0;
 		Enc_Counter+=((int16_t)TIM4->CNT)/2;
 		TIM4->CNT = (uint16_t)(((int16_t)TIM4->CNT) % 2);
+		if(!HAL_GPIO_ReadPin(Start_button_GPIO_Port, Start_button_Pin))
+		{
+			Hold_start_button++;
+		}
+		else
+		{
+			Hold_start_button=0;
+		}
+		if(Hold_start_button>60)
+		{
+			Need_off_output=1;
+		}
+
+
 	}
 
 }
@@ -503,6 +559,13 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 
 	if((GPIO_Pin == Start_button_Pin) || (GPIO_Pin == Encode_Push_Pin))Display_need_wakeup=1;
+
+	if(GPIO_Pin == Encode_Push_Pin)
+	{
+		mode++;
+		if(mode>VOLT_SCREEN)
+			mode=dU_dt_SCREEN;
+	}
 
 	if(GPIO_Pin == Start_button_Pin)
 		if(Push_start_button==0)Push_start_button=1;

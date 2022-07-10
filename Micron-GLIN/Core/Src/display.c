@@ -13,7 +13,7 @@ unsigned char LcdCache[LCD_CACHSIZE];   // Фреймбуфер
 unsigned int LcdCacheIdx = 0;   // Текущий адрес во фреймбуфере
 extern FunctionalState Display_need_wakeup;
 extern FunctionalState Display_status;
-extern FunctionalState Need_update_Display;
+extern uint8_t Need_update_Display;
 
 void LcdSend(uint8_t data, uint8_t cmd) //Sends data to display controller
 {
