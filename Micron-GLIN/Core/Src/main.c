@@ -131,6 +131,7 @@ FunctionalState Need_update_Display=0;
 FunctionalState Need_update_DDS=0;
 FunctionalState Ramp_dac_step_complete=0;
 FunctionalState CAL_STATE=LOCK_STATE;
+uint8_t Push_start_button=0;
 
 /* USER CODE END PV */
 
@@ -289,13 +290,41 @@ int main(void)
 			//Recalculate_ramp_speed(SWEEP_MODE);
 
 		}
+		if(Push_start_button>2 && Push_start_button<20)
+		{
+			if(cfg.LDACMODE==0)
+			{
+				cmd_SWEEP_START();
+				if(mode==VOLT_SCREEN)mode=dU_dt_SCREEN;
+			}
+			else
+			{
+				cmd_SWEEP_STOP();
+			}
+			Push_start_button=20;
+		}
+
 		if(Need_update_Display && Display_status)
 		{
 			switch(mode)
 			{
 			//----------------------------------------------------------//
 			case dU_dt_SCREEN:
+			{
 				display_screen(dU_dt_SCREEN);
+				if(Enc_Counter!=0)
+				{
+					if(Enc_Counter>2 || Enc_Counter<-2)
+					{
+						Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-2)*1E2)/1E2);
+					}
+					else
+					{
+						Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-3)*1E3)/1E3);
+					}
+					Enc_Counter=0;
+				}
+			}
 			break;
 			case AMP_SCREEN:
 				display_screen(AMP_SCREEN);
@@ -403,6 +432,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		Need_update_Display=1;
 		Display_timeout++;
+		if(Push_start_button!=0)Push_start_button++;
+		if(Push_start_button>60)Push_start_button=0;
+		Enc_Counter+=((int16_t)TIM4->CNT)/2;
+		TIM4->CNT = (uint16_t)(((int16_t)TIM4->CNT) % 2);
 	}
 
 }
@@ -470,6 +503,9 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 
 	if((GPIO_Pin == Start_button_Pin) || (GPIO_Pin == Encode_Push_Pin))Display_need_wakeup=1;
+
+	if(GPIO_Pin == Start_button_Pin)
+		if(Push_start_button==0)Push_start_button=1;
 }
 
 void Parsing_USB_command(void)

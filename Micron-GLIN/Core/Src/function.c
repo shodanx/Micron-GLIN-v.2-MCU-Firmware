@@ -37,6 +37,8 @@ extern float ramp_target_speed;
 extern uint8_t C_ref;
 extern float Voltage;
 
+extern int16_t Enc_Counter;
+
 extern uint8_t mode;
 
 extern FunctionalState CAL_STATE;
