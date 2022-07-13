@@ -94,6 +94,8 @@ uint8_t eta_hours,eta_minute,eta_second;
 int16_t Enc_Counter = 0;
 uint32_t Display_timeout=0;
 
+int16_t Need_DAC_TEMP_CAL=0;
+
 CIRC_GBUF_DEF(uint8_t, USB_rx_command_buffer, command_buffer_len);
 
 uint32_t DAC_tx_buffer;
@@ -232,6 +234,8 @@ int main(void)
 	DAC_SendInit();
 	DAC_Write(DAC_code);
 
+	DAC_TEMP_CAL();
+
 	HAL_TIM_Base_Start_IT(&htim3);
 	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
@@ -250,6 +254,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
+//----------------------------------------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------------------------------------
 		if(USB_CDC_End_Line_Received)
 		{
 			uint8_t i=0,x=0;
@@ -285,7 +293,19 @@ int main(void)
 			Parsing_USB_command();
 			if(Display_status==0)Display_need_wakeup=1;
 		}
+//----------------------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------------------
+		if(Need_DAC_TEMP_CAL>=6000 && Current_output_status==Output_off_STATE) // Each 5 min, do DAC temperature calibration, if output is off
+		{
+			DAC_TEMP_CAL();
+			Need_DAC_TEMP_CAL=0;
+		}
+//----------------------------------------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------------------------------------
 		if(Need_update_DDS)
 		{
 			if(Ramp_dac_step_complete)
@@ -304,7 +324,10 @@ int main(void)
 			}
 
 		}
+//----------------------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------------------
 		if(Need_off_output==1)
 		{
 			Push_start_button=10;
@@ -312,6 +335,10 @@ int main(void)
 			output_state(Output_off_STATE);
 			Need_off_output=0;
 		}
+//----------------------------------------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------------------------------------
 
 		if(Push_Encode_button>2 && Push_Encode_button<5)
 		{
@@ -348,7 +375,10 @@ int main(void)
 			}
 			Push_start_button=10;
 		}
+//----------------------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------------------
 		if(Need_update_Display && Display_status)
 		{
 			switch(mode)
@@ -373,6 +403,10 @@ int main(void)
 			LcdUpdate();
 			LcdClear_massive();
 		}
+//----------------------------------------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------------------------------------
 		if(Enc_Counter!=0)
 		{
 		switch(mode)
@@ -389,16 +423,10 @@ int main(void)
 				Recalculate_ramp_speed(dU_dt_SCREEN, round((ramp_target_speed+Enc_Counter*1E-3)*1E3)/1E3);
 			}
 			Enc_Counter=0;
+			if(Current_output_status!=Output_off_STATE && cfg.LDACMODE==0)output_state(Output_auto_STATE);
 		}
 		break;
 		case AMP_SCREEN:
-//			if(Enc_Counter>2 || Enc_Counter<-2)
-//			{
-//				amp_target_speed_maximum;
-//
-//				Recalculate_ramp_speed(AMP_SCREEN, (amp_target_speed+(Enc_Counter*amp_target_speed*1E-2)));
-//			}
-//			else
 			{
 				uint8_t Ei,Eix;
 				float amp_target_speed_maximum_tmp=amp_target_speed_maximum;
@@ -432,6 +460,7 @@ int main(void)
 				Recalculate_ramp_speed(AMP_SCREEN, amp_target_speed_tmp);
 			}
 			Enc_Counter=0;
+			if(Current_output_status!=Output_off_STATE && cfg.LDACMODE==0)output_state(Output_auto_STATE);
 		break;
 		case CAP_SELECT_SCREEN:
 			C_ref+=Enc_Counter;
@@ -444,20 +473,25 @@ int main(void)
 			if(DAC_code_direction>DIRECTION_CYCLE_STATE)
 				DAC_code_direction=DIRECTION_DOWN_STATE;
 			Enc_Counter=0;
+			if(cfg.LDACMODE==0)cmd_SWEEP_STOP();
 		break;
 		case VOLT_SCREEN:
 			if(Enc_Counter>4 || Enc_Counter<-4)
 			{
-				cmd_SET_OUTPUT_VOLTAGE(round((Voltage+Enc_Counter*1E-1)*1E1)/1E1);
+				cmd_SET_OUTPUT_VOLTAGE(round((calculate_output_voltage()+Enc_Counter*1E-1)*1E1)/1E1);
 			}
 			else
 			{
-				cmd_SET_OUTPUT_VOLTAGE(round((Voltage+Enc_Counter*1E-3)*1E3)/1E3);
+				cmd_SET_OUTPUT_VOLTAGE(round((calculate_output_voltage()+Enc_Counter*1E-3)*1E3)/1E3);
 			}
 			Enc_Counter=0;
 		break;
 		}
 		}
+		//----------------------------------------------------------------------------------------------------------
+
+
+		//----------------------------------------------------------------------------------------------------------
 		if(Display_need_wakeup)
 		{
 			Display_need_wakeup=0;
@@ -560,6 +594,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		if(Push_Encode_button!=0)Push_Encode_button++;
 		if(Push_Encode_button>15)Push_Encode_button=0;
 
+		if(Current_output_status==Output_off_STATE)
+			Need_DAC_TEMP_CAL++;
+
 		Enc_Counter+=((int16_t)TIM4->CNT)/2;
 		TIM4->CNT = (uint16_t)(((int16_t)TIM4->CNT) % 2);
 		if(!HAL_GPIO_ReadPin(Start_button_GPIO_Port, Start_button_Pin))
@@ -597,12 +634,13 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		{
 		//----------------------------------------------------------//
 		case DIRECTION_UP_STATE:
-			if(DAC_code<=(0xFFFFF-DDS_target_multipiller))
+			if(DAC_code<=(DAC_CODE_TOP-DDS_target_multipiller))
 			{
 				DAC_code+=DDS_target_multipiller;
 			} else  {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
-				//DAC_SendInit();
+				DAC_SendInit();
+				DAC_Write(DAC_CODE_DOWN);
 				//send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}
@@ -614,7 +652,8 @@ __RAM_FUNC void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				DAC_code-=DDS_target_multipiller;
 			} else {
 				CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
-				//DAC_SendInit();
+				DAC_SendInit();
+				DAC_Write(DAC_CODE_TOP);
 				//send_answer_to_CDC(DONE_TYPE_1);
 				return;
 			}

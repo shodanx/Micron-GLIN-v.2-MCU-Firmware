@@ -110,7 +110,7 @@ void output_state(uint8_t type)
 		Relay_control(3,0); // Output Enable
 		HAL_Delay(relay_settling_time_ms); // wait
 		Relay_control(0,0); // set all coils off
-		Current_output_status=Output_off_STATE;
+		Current_output_status=type;
 		break;
 
 	case Output_x1_STATE:
@@ -120,7 +120,7 @@ void output_state(uint8_t type)
 		Relay_control(3,1); // Output Enable
 		HAL_Delay(relay_settling_time_ms); // wait
 		Relay_control(0,0); // set all coils off
-		Current_output_status=Output_x1_STATE;
+		Current_output_status=type;
 		DAC_fullrange_voltage=cal_DAC_up_voltage-cal_DAC_down_voltage;
 		break;
 
@@ -131,7 +131,7 @@ void output_state(uint8_t type)
 		Relay_control(3,1); // Output Enable
 		HAL_Delay(relay_settling_time_ms); // wait
 		Relay_control(0,0); // set all coils off
-		Current_output_status=Output_x2_STATE;
+		Current_output_status=type;
 		DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff;
 		break;
 
@@ -142,23 +142,25 @@ void output_state(uint8_t type)
 		Relay_control(3,1); // Output Enable
 		HAL_Delay(relay_settling_time_ms); // wait
 		Relay_control(0,0); // set all coils off
-		Current_output_status=Output_x4_STATE;
+		Current_output_status=type;
 		DAC_fullrange_voltage=(cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x4_coeff;
 		break;
 
 	case Output_auto_STATE:
 		if((cal_DAC_up_voltage-cal_DAC_down_voltage)/DAC_target_speed > 600)
 		{
-			output_state(Output_x1_STATE);
+			if(Current_output_status!=Output_x1_STATE)
+				output_state(Output_x1_STATE);
 		}
 		else
-			if (((cal_DAC_up_voltage-cal_DAC_down_voltage)*2)/DAC_target_speed > 600)
+			if (((cal_DAC_up_voltage-cal_DAC_down_voltage)*gain_x2_coeff)/DAC_target_speed > 600)
 			{
-				output_state(Output_x2_STATE);
+				if(Current_output_status!=Output_x2_STATE)
+					output_state(Output_x2_STATE);
 			}
 			else
-				output_state(Output_x4_STATE);
-
+				if(Current_output_status!=Output_x4_STATE)
+					output_state(Output_x4_STATE);
 		break;
 	}
 }
@@ -382,9 +384,9 @@ void cmd_SWEEP_START()
 {
 	output_state(Output_auto_STATE);
 	DDS_Calculation();
-	DAC_TEMP_CAL();
 	CPLD_control(CPLD_ON_STATE); // Enable LDAC signal
 	DAC_SendInit();
+
 }
 //==============================================================================================
 
@@ -392,6 +394,18 @@ void cmd_SWEEP_START()
 //==============================================================================================
 void cmd_SWEEP_STOP()
 {
+	// Stop and recharge DAC code
+	if(DAC_code_direction==DIRECTION_UP_STATE)
+	{
+		cmd_DAC_SET(DAC_CODE_DOWN);
+		return;
+	}
+	if(DAC_code_direction==DIRECTION_DOWN_STATE)
+	{
+		cmd_DAC_SET(DAC_CODE_TOP);
+		return;
+	}
+
 	CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 	DAC_SendInit();
 }
@@ -399,9 +413,11 @@ void cmd_SWEEP_STOP()
 
 
 //==============================================================================================
-void cmd_DAC_SET(uint32_t code)
+FunctionalState cmd_DAC_SET(uint32_t code)
 {
-	if (code>0xFFFFF)return;
+	if (code>0xFFFFF)return ret_ERROR;
+
+	DAC_code=code;
 
 	if(DAC_code_direction!=DIRECTION_CYCLE_STATE)
 	{
@@ -418,8 +434,9 @@ void cmd_DAC_SET(uint32_t code)
 
 	CPLD_control(CPLD_OFF_STATE); // Disable LDAC signal
 	DAC_SendInit();
-	DAC_TEMP_CAL();
+	//DAC_TEMP_CAL();
 	DAC_Write(code);
+	return ret_OK;
 }
 //==============================================================================================
 
@@ -427,12 +444,15 @@ void cmd_DAC_SET(uint32_t code)
 //==============================================================================================
 FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 {
+	uint32_t DAC_code_tmp;
+
 	if(volt>=cal_DAC_down_voltage && volt<=cal_DAC_up_voltage)
 	{
 		if(Current_output_status!=Output_x1_STATE)output_state(Output_x1_STATE);
 		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
-		DAC_code=(uint32_t)((volt-cal_DAC_down_voltage)/dac_resolution);
-		cmd_DAC_SET(DAC_code);
+		DAC_code_tmp=(uint32_t)((volt-cal_DAC_down_voltage)/dac_resolution);
+		if(cmd_DAC_SET(DAC_code_tmp)==ret_ERROR)
+			return ret_ERROR;
 		Voltage=volt;
 		return ret_OK;
 	}
@@ -440,8 +460,9 @@ FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 	{
 		if(Current_output_status!=Output_x2_STATE)output_state(Output_x2_STATE);
 		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
-		DAC_code=(uint32_t)((volt/gain_x2_coeff-cal_DAC_down_voltage)/dac_resolution);
-		cmd_DAC_SET(DAC_code);
+		DAC_code_tmp=(uint32_t)((volt/gain_x2_coeff-cal_DAC_down_voltage)/dac_resolution);
+		if(cmd_DAC_SET(DAC_code_tmp)==ret_ERROR)
+			return ret_ERROR;
 		Voltage=volt;
 		return ret_OK;
 	}
@@ -449,12 +470,12 @@ FunctionalState cmd_SET_OUTPUT_VOLTAGE(float volt)
 	{
 		if(Current_output_status!=Output_x4_STATE)output_state(Output_x4_STATE);
 		dac_resolution=(cal_DAC_up_voltage-cal_DAC_down_voltage)/0xFFFFF; // Calculate 1 LSB resolution
-		DAC_code=(uint32_t)((volt/gain_x4_coeff-cal_DAC_down_voltage)/dac_resolution);
-		cmd_DAC_SET(DAC_code);
+		DAC_code_tmp=(uint32_t)((volt/gain_x4_coeff-cal_DAC_down_voltage)/dac_resolution);
+		if(cmd_DAC_SET(DAC_code_tmp)==ret_ERROR)
+			return ret_ERROR;
 		Voltage=volt;
 		return ret_OK;
 	}
-
 	return ret_ERROR;
 }
 

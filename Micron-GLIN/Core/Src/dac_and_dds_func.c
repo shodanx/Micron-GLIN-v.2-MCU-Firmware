@@ -131,7 +131,7 @@ void CPLD_control(FunctionalState state){
 
 
 //==============================================================================================
-void DAC_Write(uint32_t value)
+__RAM_FUNC void DAC_Write(uint32_t value)
 {
 	DAC_tx_buffer=0x01000000; // Write DAC-DATA
 	DAC_tx_buffer+=(value & 0xFFFFF)<<4;
@@ -154,7 +154,7 @@ __RAM_FUNC void DAC_Write_FAST(void)
 }
 
 //==============================================================================================
-void DAC_SendInit(void)
+__RAM_FUNC void DAC_SendInit(void)
 {
 
 	DAC_tx_buffer=0x02000000; // Write CONFIG1

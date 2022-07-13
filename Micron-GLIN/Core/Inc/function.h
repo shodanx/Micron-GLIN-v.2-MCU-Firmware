@@ -58,6 +58,9 @@
 #define CAP_SELECT_SCREEN	6
 #define DIR_SELECT_SCREEN	7
 
+#define Enable_change_output	0
+#define Disable_change_output	1
+
 
 #define ret_ERROR	0
 #define ret_OK		1
@@ -85,7 +88,7 @@
 void send_answer_to_CDC(uint8_t);
 void cmd_SWEEP_START();
 void cmd_SWEEP_STOP();
-void cmd_DAC_SET(uint32_t);
+FunctionalState cmd_DAC_SET(uint32_t);
 FunctionalState cmd_SET_OUTPUT_VOLTAGE(float);
 
 FunctionalState cmd_CAL(uint8_t, float);
